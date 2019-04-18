@@ -53,8 +53,12 @@ namespace Timeline {
 
 			ImageGallery.Item item;
 			if (m_FaceEntries.TryGetValue(image, out item) == false) {
-				item = processGallery.AddImage(image);
-				m_FaceEntries.Add(image, item);
+                try
+                {
+                    item = processGallery.AddImage(image);
+                    m_FaceEntries.Add(image, item);
+                }
+                catch (Exception ex) { }
 			}
 			else {
 				item.control.Source = image;
