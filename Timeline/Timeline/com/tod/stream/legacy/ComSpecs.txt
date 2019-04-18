@@ -1,0 +1,30 @@
+﻿On Mon, Feb 27, 2017 at 8:39 AM, Nareg <nareg.k@gmail.com> wrote:
+Hi Chady,
+
+Commands are:
+mXXXXX_SSSSS_EEEEE_W  for move
+
+where XXXXX are 5 digit coordinates representing the number of steps for X (always positive).
+SSSSS is steps for shoulder
+EEEEE for elbow
+W is 0 for pen off and 1 for pen on
+The lengths are always fixed so append 0s where needed (e.g. 00100 for 100 steps)
+
+sXXXXX for setting the default speed of the motors
+
+aXXXXX for setting the default acceleration of the motors
+
+qXXXXX_SSSSS_EEEEE_W
+
+q is the streaming mode. When the controller received the coordinates, it will store it in an array. If the array is not full, it will reply with a 1 so you can send the next coordinate.
+It will automatically start drawing once it has enough coordinates.
+After sending the very last coordinate in the stream, send coordinates q00000_00000_00000_0 (all zero coordinates) so the controller can go to idle waiting for the next drawing. (During idle, you can use the 'm' command to move TOD around if needed).
+
+I'll be doing some modifications on the communication but that is more or less how it is.
+
+c => calibrate
+
+// streaming mode
+q => confirmation
+b => buffer full
+r => continue
