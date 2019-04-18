@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace com.tod.stream {
@@ -100,12 +101,20 @@ namespace com.tod.stream {
 			}
 		}
 
+		private static Thread s_DebugThread;
 		public void Send(int xsteps, int ssteps, int esteps, int wrist) {
 			string command = string.Format("{0}_{1}_{2}_{3}", xsteps, ssteps, esteps, wrist);
 
 			try {
 				if (DEBUG) {
-					StreamCompleted?.Invoke();
+					if (s_DebugThread == null) {
+						s_DebugThread = new Thread(() => {
+							Thread.Sleep(3000);
+							StreamCompleted?.Invoke();
+							s_DebugThread = null;
+						});
+						s_DebugThread.Start();
+					}
 				}
 				else {
 					// Build/manage queue
