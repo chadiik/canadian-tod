@@ -111,7 +111,7 @@ namespace com.tod.scenarios {
 		}
 
 		private void OnIKConversionCompleted(int jobID) {
-			Logger.Instance.WriteLog("Scenario: Completed IK conversion job: {0} >", jobID);
+			Logger.Instance.WriteLog("Scenario: Completed IK conversion job: {0}", jobID);
 		}
 
 		private void Update() {
