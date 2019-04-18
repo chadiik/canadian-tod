@@ -35,7 +35,6 @@ namespace Timeline {
 			Config.files.facesHC = "haarcascade_frontalface_default.xml";
 			Config.files.video0 = "videos/" + new string[] { "faces.mp4" }[0];
 
-			Config.debug = true;
 			Start();
 		}
 

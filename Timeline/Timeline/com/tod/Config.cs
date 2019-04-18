@@ -34,5 +34,34 @@ namespace com.tod {
 		public static Files files = new Files();
 		public static Time time = new Time();
 		public static Canvas canvas = new Canvas(1000, 1000, 300, 500); // mm
+
+		static Config() {
+			Load();
+		}
+
+		public static void Load() {
+			try {
+				System.IO.StreamReader file = new System.IO.StreamReader("config/config.txt");
+				string content = file.ReadToEnd();
+				string[] entries = content.Split('\n', '\r');
+				foreach(string entry in entries) {
+					string[] key_value = entry.Split('=');
+					if(key_value.Length == 2) {
+						string key = key_value[0];
+						string value = key_value[1];
+
+						switch (key) {
+							case "debug":
+								bool debug;
+								if (bool.TryParse(value, out debug)) Config.debug = debug;
+								break;
+						}
+					}
+				}
+			}
+			catch(Exception ex) {
+				Logger.Instance.ExceptionLog(ex.ToString());
+			}
+		}
 	}
 }
