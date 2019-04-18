@@ -1,1 +1,2 @@
-debug=false
+# if debug is true, will use sample video file; Otherwise stream from webcam
+debug=true
