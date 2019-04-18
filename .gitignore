@@ -5,6 +5,10 @@
 *.userosscache
 *.sln.docstates
 
+job*.txt
+Timeline.exe
+Timeline.vshost.exe.manifest
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
