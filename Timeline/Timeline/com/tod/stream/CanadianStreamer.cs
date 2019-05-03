@@ -55,6 +55,14 @@ namespace com.tod.stream {
 			}
 		}
 
+        public void Pause() {
+            StreamPaused?.Invoke();
+        }
+
+        public void Resume() {
+            StreamStarted?.Invoke();
+        }
+
 		public void Close() {
 
 			try {

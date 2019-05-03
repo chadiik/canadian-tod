@@ -19,6 +19,13 @@ namespace com.tod.ik {
 		public event ConversionComplete ConversionCompleted;
 
 		private bool m_Active = false;
+        private bool m_Paused = false;
+
+        public bool Paused {
+            set {
+                m_Paused = value;
+            }
+        }
 
 		public void Stop() {
 			m_Active = false;
@@ -58,6 +65,11 @@ namespace com.tod.ik {
 					const string flag = "#STEPS";
 					proc.Start();
 					while (m_Active && !proc.StandardOutput.EndOfStream) {
+
+                        while (m_Paused) {
+                            Thread.Sleep(100);
+                        }
+
 						string line = proc.StandardOutput.ReadLine();
 
 						if(line.IndexOf(flag) != -1) {

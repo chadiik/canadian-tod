@@ -22,7 +22,9 @@ namespace com.tod.stream {
 		event StreamState StreamPaused;
 
 		void Open();
-		void Close();
+		void Pause();
+        void Resume();
+        void Close();
 		void Calibrate();
 		void Send(object value);
 		void Send(int xsteps, int ssteps, int esteps, int wrist);

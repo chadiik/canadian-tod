@@ -25,6 +25,7 @@ namespace Timeline {
 		public Form1() {
 			InitializeComponent();
 			FormClosed += OnFormClosed;
+            KeyDown += OnKeyDown;
 
 			Config.fps = 4;
 			Config.files.ikJobsDir = "../../../../IK Solver/simpleIK_sharp/bin/Debug/";
@@ -33,12 +34,23 @@ namespace Timeline {
 			Config.files.focusMap = "assets/focus.jpg";
 			Config.files.eyesHC = "haarcascade_eye.xml";
 			Config.files.facesHC = "haarcascade_frontalface_default.xml";
-			Config.files.video0 = "videos/" + new string[] { "faces.mp4" }[0];
+			//Config.files.video0 = "videos/" + new string[] { "faces.mp4" }[0];
 
 			Start();
 		}
 
-		private void Debug() {
+        private void OnKeyDown(object sender, KeyEventArgs e) {
+
+            switch (e.KeyCode) {
+                case Keys.Space:
+                    if (e.Control) {
+                        m_Scenario.Pause();
+                    }
+                    break;
+            }
+        }
+
+        private void Debug() {
 
 			List<TP> path = new List<TP>() {
 				new TP(-1, -1),

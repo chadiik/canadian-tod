@@ -46,6 +46,18 @@ namespace com.tod.scenarios {
 			timer.Start();
 		}
 
+        public void Pause() {
+
+            ik.Paused = true;
+            streamer.Pause();
+        }
+
+        public void Resume() {
+
+            ik.Paused = false;
+            streamer.Resume();
+        }
+
 		public void Stop() {
 
 			vision.Stop();
