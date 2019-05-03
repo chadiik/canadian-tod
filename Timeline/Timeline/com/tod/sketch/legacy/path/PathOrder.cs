@@ -61,7 +61,7 @@ namespace com.tod.sketch.path {
 			{ "3", new DetailParams { minSize = .015, sizeRange = .25, brightPower = 1.5, distancePower = 3, alaunch = 45, breakdistance = .01, detailSizeThreshold = .00, minSteps = 4, stepsSizeMultiplier = 80  } }
 		};
 
-		private static DetailParams preset = detailPresets["3"];
+		private static DetailParams preset = detailPresets["2"];
 		private static int numDistanceBreaks = 0;
 
 		public static void GetOrderedList(OTP startPosition) {

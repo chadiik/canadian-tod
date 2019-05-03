@@ -34,6 +34,7 @@ namespace com.tod {
 		public static Files files = new Files();
 		public static Time time = new Time();
 		public static Canvas canvas = new Canvas(1000, 1000, 300, 500); // mm
+        public static bool sprayLine = false;
 
 		static Config() {
 			Load();
@@ -55,7 +56,16 @@ namespace com.tod {
 								bool debug;
 								if (bool.TryParse(value, out debug)) Config.debug = debug;
 								break;
-						}
+
+                            case "sample":
+                                files.video0 = "config/" + value;
+                                break;
+
+                            case "linestyle":
+                                sprayLine = value == "spray";
+                                break;
+
+                        }
 					}
 				}
 			}

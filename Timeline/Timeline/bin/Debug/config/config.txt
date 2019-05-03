@@ -1,2 +1,8 @@
+# Line preview style "spray" or "stroke"
+linestyle=stroke
+
 # if debug is true, will use sample video file; Otherwise stream from webcam
 debug=true
+
+# sample is the video entry for debug mode
+sample=faces.mp4

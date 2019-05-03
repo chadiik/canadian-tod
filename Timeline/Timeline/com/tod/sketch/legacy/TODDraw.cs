@@ -341,6 +341,7 @@ namespace com.tod.sketch {
 			float wf = (float)w;
 			float hf = (float)h;
 
+            bool sprayLine = Config.sprayLine;
 			for (int i = 0; i < 100; i++) {
 				int numPoints = _path.Count;
 				if (_index < numPoints) {
@@ -348,8 +349,11 @@ namespace com.tod.sketch {
 					_drawPoint.X = (int)(point.x * wf);
 					_drawPoint.Y = (int)(point.y * hf);
 					if (_penUp > 2 && _drawPoint.X > 1 && _lastPoint.X > 1) {
-						TPDither.SprayLine(_lastPoint.X, _lastPoint.Y, _drawPoint.X, _drawPoint.Y);
-					}
+                        if(sprayLine)
+						    TPDither.SprayLine(_lastPoint.X, _lastPoint.Y, _drawPoint.X, _drawPoint.Y);
+                        else
+                            Stroke(_lastPoint, _drawPoint);
+                    }
 					_lastPoint = _drawPoint;
 				}
 				_index++;
@@ -359,5 +363,9 @@ namespace com.tod.sketch {
 
 			return _index < _path.Count;
 		}
+
+        private void Stroke(Point p0, Point p1) {
+            CvInvoke.Line(TPDither.Canvas, p0, p1, BLACK, 8);
+        }
 	}
 }
