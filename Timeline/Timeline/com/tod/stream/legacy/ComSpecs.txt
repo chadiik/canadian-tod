@@ -16,9 +16,12 @@ aXXXXX for setting the default acceleration of the motors
 
 qXXXXX_SSSSS_EEEEE_W
 
-q is the streaming mode. When the controller received the coordinates, it will store it in an array. If the array is not full, it will reply with a 1 so you can send the next coordinate.
+q is the streaming mode. When the controller received the coordinates, it will store it in an array. 
+If the array is not full, it will reply with a 1 so you can send the next coordinate.
 It will automatically start drawing once it has enough coordinates.
-After sending the very last coordinate in the stream, send coordinates q00000_00000_00000_0 (all zero coordinates) so the controller can go to idle waiting for the next drawing. (During idle, you can use the 'm' command to move TOD around if needed).
+After sending the very last coordinate in the stream, 
+send coordinates q00000_00000_00000_0 (all zero coordinates) so the controller can go to idle 
+waiting for the next drawing. (During idle, you can use the 'm' command to move TOD around if needed).
 
 I'll be doing some modifications on the communication but that is more or less how it is.
 

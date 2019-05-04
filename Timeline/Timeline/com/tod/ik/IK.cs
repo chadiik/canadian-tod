@@ -81,7 +81,7 @@ namespace com.tod.ik {
 								Logger.Instance.WriteLog("Could not parse {0} entry", flag);
 						}
 						else {
-							Logger.Instance.WriteLog(line);
+							Logger.Instance.SilentLog(line);
 						}
 					}
 

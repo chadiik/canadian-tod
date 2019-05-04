@@ -58,7 +58,7 @@ namespace com.tod.stream {
 					return;
 				}
 				catch (IOException e) {
-					Logger.Instance.ExceptionLog("{0}", e.ToString());
+					Logger.Instance.WriteLog("{0}", e.Message);
 
 					Thread.Sleep(100);
 				}
@@ -73,8 +73,9 @@ namespace com.tod.stream {
 
 				while (_port.BytesToRead > 0) {
 					string data = _port.ReadLine();
-					double millis = DateTime.UtcNow.Subtract(START).TotalMilliseconds;
-					_dataCallback(data);
+                    Logger.Instance.SilentLog("[ArduinoCom] Received " + data);
+                    double millis = DateTime.UtcNow.Subtract(START).TotalMilliseconds;
+					_dataCallback(data.Substring(0, data.Length - 1));
 				}
 			}
 		}
@@ -104,7 +105,7 @@ namespace com.tod.stream {
 			}
 		}
 
-		public bool IsConnected {
+        public bool IsConnected {
 			get {
 				return _port != null && _port.IsOpen;
 			}
