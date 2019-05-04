@@ -26,8 +26,6 @@ namespace com.tod.stream {
         void Resume();
         void Close();
 		void Calibrate();
-		void Send(object value);
-		void Send(int xsteps, int ssteps, int esteps, int wrist);
-		void Receive(object value);
+		void Stream(int xsteps, int ssteps, int esteps, int wrist);
 	}
 }

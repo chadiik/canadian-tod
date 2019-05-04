@@ -36,8 +36,8 @@ namespace com.tod.scenarios {
 			ik = new IK();
 			ik.ConversionCompleted += OnIKConversionCompleted;
 
-			streamer = new CanadianStreamer();
-			streamer.ConnectionFailed += () => Logger.Instance.ExceptionLog("Scenario: CONNECTION TO CANADIAN STREAMER FAILED!");
+			streamer = new CanadianStreamer(!Config.stream);
+			streamer.ConnectionFailed += () => Logger.Instance.WriteLog("Scenario: CONNECTION TO CANADIAN STREAMER FAILED!");
 
 			Timer timer = new Timer(1000.0);
 			ElapsedEventHandler handler = null;
@@ -101,8 +101,8 @@ namespace com.tod.scenarios {
 
 				int job = -1;
 				job = ik.Convert(sketch, (int xsteps, int ssteps, int esteps, int wrist) => {
-					Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
-					streamer.Send(xsteps, ssteps, esteps, job);
+					//Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
+					streamer.Stream(Math.Abs(xsteps), Math.Abs(ssteps), Math.Abs(esteps), Math.Abs(wrist));
 				});
 
 				Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
@@ -112,13 +112,14 @@ namespace com.tod.scenarios {
 			onConnectionEstablished = () => {
 				Logger.Instance.WriteLog("Scenario: ConnectionEstablished");
 
-				streamer.ConnectionEstablished -= onConnectionEstablished;
+                streamer.Resume();
+
+                streamer.ConnectionEstablished -= onConnectionEstablished;
 				streamer.CalibrationCompleted += onCalibrationCompleted;
 				streamer.Calibrate();
-			};
+            };
 
 			streamer.ConnectionEstablished += onConnectionEstablished;
-
 			streamer.Open();
 		}
 

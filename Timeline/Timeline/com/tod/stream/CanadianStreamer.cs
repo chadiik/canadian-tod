@@ -10,7 +10,6 @@ namespace com.tod.stream {
 	public class CanadianStreamer : Streamer {
 
 		private const string DEFAULT_COM_PORT = "COM5";
-		private const bool DEBUG = true;
 
 		public event Connection ConnectionEstablished;
 		public event Connection ConnectionFailed;
@@ -24,52 +23,81 @@ namespace com.tod.stream {
 		public event StreamState StreamStarted;
 
 		private ArduinoCom m_ArduinoSerial;
+        private Queue<string> m_StreamQueue;
+        private Thread m_Streamer;
+        private object m_StreamLock = new object();
+        private bool m_IsStreaming = false;
+        private bool m_AwaitingFeedback = false;
+        private int m_CountPackets = 0;
+        private bool m_Debug = true;
 
-		public CanadianStreamer() {
-			m_ArduinoSerial = new ArduinoCom();
-		}
+        public CanadianStreamer(bool debug) {
+            m_Debug = debug;
+            Logger.Instance.StreamLog("debug: {0}", m_Debug);
+            m_ArduinoSerial = new ArduinoCom();
+            m_StreamQueue = new Queue<string>(8000);
+        }
 
 		public void Open() {
 
-			if (m_ArduinoSerial.IsConnected) {
-				ConnectionEstablished?.Invoke();
+            m_StreamQueue.Clear();
+
+            if (m_ArduinoSerial.IsConnected) {
+                lock (m_StreamLock) {
+                    m_AwaitingFeedback = false;
+                }
+                ConnectionEstablished?.Invoke();
 				return;
 			}
 
 			try {
-				if (DEBUG) {
+				if (m_Debug) {
 					ConnectionEstablished?.Invoke();
 				}
 				else {
-					m_ArduinoSerial.Connect(
+
+                    m_ArduinoSerial.Connect(
 						DEFAULT_COM_PORT,
 						data => Receive(data), // Data sent from Arduino
-						() => ConnectionEstablished?.Invoke(), // Success
+						() => Logger.Instance.WriteLog("Awaiting feedback")/*ConnectionEstablished?.Invoke()*/, // Success
 						() => ConnectionFailed?.Invoke() // Failure
 					);
-				}
+                }
 			}
 			catch(Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Open() error: {0}", ex.ToString());
+				Logger.Instance.StreamLog("Streamer.Open() error: {0}", ex.Message);
 				ConnectionFailed?.Invoke();
 			}
 		}
 
         public void Pause() {
             StreamPaused?.Invoke();
+
+            m_IsStreaming = false;
         }
 
         public void Resume() {
             StreamStarted?.Invoke();
+
+            m_IsStreaming = true;
+            m_CountPackets = 0;
+
+            if (m_Streamer == null) {
+                m_Streamer = new Thread(ConsumeStreamQueue);
+                m_Streamer.Start();
+            }
+
+            Logger.Instance.WriteLog("Stream started");
         }
 
 		public void Close() {
 
 			try {
 				m_ArduinoSerial.Disconnect();
+                m_Streamer.Abort();
 			}
 			catch(Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Close() error: {0}", ex.ToString());
+				Logger.Instance.StreamLog("Streamer.Close() error: {0}", ex.Message);
 			}
 			finally {
 				ConnectionClosed?.Invoke();
@@ -78,43 +106,31 @@ namespace com.tod.stream {
 
 		public void Calibrate() {
 
-			try {
-				if (DEBUG) {
-					Send("Calibrate or something");
-					CalibrationStarted?.Invoke();
+            const string command = "c";
+            Logger.Instance.WriteLog("Calibrating");
+            try {
+				if (m_Debug) {
+                    CalibrationStarted?.Invoke();
 					CalibrationCompleted?.Invoke();
 				}
 				else {
-
-				}
+                    m_StreamQueue.Enqueue(command);
+                    CalibrationStarted?.Invoke();
+                }
 			}
 			catch (Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Calibrate() error: {0}", ex.ToString());
-			}
-		}
-
-		public void Send(object value) {
-			string data = (string)value; // or something
-
-			try {
-				if (DEBUG) {
-
-				}
-				else {
-					m_ArduinoSerial.Send(ref data);
-				}
-			}
-			catch (Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Send({1}) error: {0}", ex.ToString(), value);
-			}
+				Logger.Instance.StreamLog("Streamer.Calibrate() error: {0}", ex.Message);
+                throw;
+            }
 		}
 
 		private static Thread s_DebugThread;
-		public void Send(int xsteps, int ssteps, int esteps, int wrist) {
-			string command = string.Format("{0}_{1}_{2}_{3}", xsteps, ssteps, esteps, wrist);
+		public void Stream(int xsteps, int ssteps, int esteps, int wrist) {
+            const string pad5 = "D5";
+			string command = string.Format("q{0}_{1}_{2}_{3}", xsteps.ToString(pad5), ssteps.ToString(pad5), esteps.ToString(pad5), wrist);
 
 			try {
-				if (DEBUG) {
+				if (m_Debug) {
 					if (s_DebugThread == null) {
 						s_DebugThread = new Thread(() => {
 							Thread.Sleep(3000);
@@ -125,24 +141,89 @@ namespace com.tod.stream {
 					}
 				}
 				else {
-					// Build/manage queue
-					m_ArduinoSerial.Send(ref command);
+                    // Build/manage queue
+                    m_StreamQueue.Enqueue(command);
+					//m_ArduinoSerial.Send(ref command);
 				}
 			}
 			catch (Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Send({1}, {2}, {3}, {4}) error: {0}", ex.ToString(), xsteps, ssteps, esteps, wrist);
+				Logger.Instance.StreamLog("error: {0} in Streamer.Send({1}, {2}, {3}, {4}) ", ex.Message, xsteps, ssteps, esteps, wrist);
 			}
 		}
 
-		public void Receive(object value) {
+        private void ConsumeStreamQueue() {
+
+            while (true) {
+                Logger.Instance.SilentLog("ConsumeStreamQueue {0} | {1} | {2}", m_IsStreaming, !m_AwaitingFeedback, m_StreamQueue.Count);
+                if (m_IsStreaming && !m_AwaitingFeedback && m_StreamQueue.Count > 0) {
+                    string command = m_StreamQueue.Dequeue();
+                    lock (m_StreamLock) {
+                        m_AwaitingFeedback = true;
+                    }
+                    Send(command);
+                    Thread.Sleep(10);
+                }
+                else {
+                    Thread.Sleep(50);
+                }
+            }
+        }
+
+        private void Send(string value) {
+            
+            Logger.Instance.StreamLog("o: '{0}'", value);
+
+            try {
+                if (m_Debug) {
+
+                }
+                else {
+                    m_ArduinoSerial.Send(ref value);
+                }
+            }
+            catch (Exception ex) {
+                Logger.Instance.StreamLog("Streamer.Send({1}) error: {0}", ex.Message, value);
+                throw;
+            }
+        }
+
+        private void Receive(string value) {
 
 			try {
-				string data = (string)value;
-				throw new NotImplementedException();
-			}
+                Logger.Instance.StreamLog("i: '{0}'", value);
+                switch (value) {
+                    case "c":
+                        lock (m_StreamLock) {
+                            m_AwaitingFeedback = false;
+                        }
+                        CalibrationCompleted?.Invoke();
+                        break;
+
+                    case "b":
+                        lock (m_StreamLock) {
+                            m_AwaitingFeedback = true;
+                        }
+                        Logger.Instance.StreamLog("Sent packet {0}", m_CountPackets++);
+                        break;
+
+                    case "r":
+                        lock (m_StreamLock) {
+                            m_AwaitingFeedback = false;
+                        }
+                        break;
+
+                    default:
+                        lock (m_StreamLock) {
+                            m_AwaitingFeedback = false;
+                        }
+                        ConnectionEstablished?.Invoke();
+                        break;
+                }
+            }
 			catch (Exception ex) {
-				Logger.Instance.ExceptionLog("Streamer.Receive({1}) error: {0}", ex.ToString(), value);
-			}
+				Logger.Instance.StreamLog("Streamer.Receive({1}) error: {0}", ex.Message, value);
+                throw;
+            }
 		}
 	}
 }
