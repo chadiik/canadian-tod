@@ -195,6 +195,8 @@ namespace simpleIK_sharp
 
 			}
 
+            Console.WriteLine("#STEPS {0} {1} {2} {3}", 0, 0, 0, 0);
+
             Console.Write("Done\n");
         }
 
