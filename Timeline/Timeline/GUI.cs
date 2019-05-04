@@ -15,7 +15,8 @@ namespace Timeline {
 	class GUI : TODGUI {
 
 		public ManagedTextBox log;
-		public Image sourceImage;
+		public ManagedTextBox streamLog;
+        public Image sourceImage;
 		public Image faceRecognition;
 		public Image candidateImage;
 		public Image debugPreview;
@@ -49,7 +50,12 @@ namespace Timeline {
 			Notification(message);
 		}
 
-		public void SetProcessImage(IImage image) {
+        public override void Stream(string message) {
+            Console.WriteLine(message);
+            streamLog.AppendText(string.Format("{0}{1}", message, Environment.NewLine));
+        }
+
+        public void SetProcessImage(IImage image) {
 
 			ImageGallery.Item item;
 			if (m_FaceEntries.TryGetValue(image, out item) == false) {

@@ -74,7 +74,8 @@ namespace Timeline {
 
 			m_GUI = new GUI() {
 				log = new ManagedTextBox(log),
-				sourceImage = new Image(sourceImage),
+                streamLog = new ManagedTextBox(streamLog),
+                sourceImage = new Image(sourceImage),
 				candidateImage = new Image(candidateImage),
 				faceRecognition = new Image(faceRecognition),
 				debugPreview = new Image(debugPreview),
@@ -100,5 +101,5 @@ namespace Timeline {
 			}
 			catch (Exception) { }
 		}
-	}
+    }
 }

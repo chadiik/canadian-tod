@@ -36,5 +36,10 @@ namespace com.tod {
 		public void NotificationLog(string message, params object[] args) {
 			Notification?.Invoke(string.Format(message, args));
 		}
-	}
+
+        public event Log Stream;
+        public void StreamLog(string message, params object[] args) {
+            Stream?.Invoke(string.Format(message, args));
+        }
+    }
 }
