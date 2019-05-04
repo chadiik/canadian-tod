@@ -35,6 +35,7 @@ namespace com.tod {
 		public static Time time = new Time();
 		public static Canvas canvas = new Canvas(1000, 1000, 300, 500); // mm
         public static bool sprayLine = false;
+        public static bool stream = false;
 
 		static Config() {
 			Load();
@@ -63,6 +64,11 @@ namespace com.tod {
 
                             case "linestyle":
                                 sprayLine = value == "spray";
+                                break;
+
+                            case "stream":
+                                bool stream;
+                                if (bool.TryParse(value, out stream)) Config.stream = stream;
                                 break;
 
                         }
