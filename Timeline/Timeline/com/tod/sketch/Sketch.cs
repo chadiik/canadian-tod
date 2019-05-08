@@ -16,6 +16,8 @@ namespace com.tod.sketch {
 
 	public class Sketch {
 
+		public enum Version { Legacy, Zigzag };
+
 		public static readonly MCvScalar BLACK = new Bgr(Color.Black).MCvScalar;
 		public static readonly MCvScalar WHITE = new Bgr(Color.White).MCvScalar;
 
@@ -23,11 +25,24 @@ namespace com.tod.sketch {
 		public static event SketchComplete SketchCompleted;
 
 		private TODDraw m_TODDraw;
+		private Zigzag m_Zigzag;
+		private Version m_Version;
 
-		public Sketch() {
+		public Sketch(Version version) {
 
-			TODDraw.SketchCompleted += path => SketchCompleted?.Invoke(path);
-			m_TODDraw = new TODDraw();
+			m_Version = version;
+
+			switch (m_Version) {
+				case Version.Legacy:
+					m_TODDraw = new TODDraw();
+					m_TODDraw.SketchCompleted += path => SketchCompleted?.Invoke(path);
+					break;
+
+				case Version.Zigzag:
+					m_Zigzag = new Zigzag();
+					m_Zigzag.SketchCompleted += path => SketchCompleted?.Invoke(path);
+					break;
+			}
 		}
 
 		public void Test(string filename = "0.png") {
@@ -43,10 +58,28 @@ namespace com.tod.sketch {
 
 		public void Draw(Portrait portrait) {
 
-			m_TODDraw.Draw(portrait);
+			switch (m_Version) {
+				case Version.Legacy:
+					m_TODDraw.Draw(portrait);
+					break;
+
+				case Version.Zigzag:
+					m_Zigzag.Draw(portrait, Zigzag.Parameters.Default(4));
+					break;
+			}
 		}
 
 		public static void ShowProcessImage(Image<Bgr, byte> image, string txt = null) {
+
+			if (txt != null) {
+				CvInvoke.Rectangle(image, new Rectangle(1, 1, image.Width - 2, 20), WHITE, -1);
+				CvInvoke.PutText(image, txt, new Point(18, 18), FontFace.HersheyPlain, 1, BLACK, 1);
+			}
+
+			DisplayEntryRequested?.Invoke(image);
+		}
+
+		public static void ShowProcessImage(Image<Gray, byte> image, string txt = null) {
 
 			if (txt != null) {
 				CvInvoke.Rectangle(image, new Rectangle(1, 1, image.Width - 2, 20), WHITE, -1);
