@@ -1,4 +1,5 @@
 ﻿using com.tod.canvas;
+using Version = com.tod.sketch.Sketch.Version;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,7 @@ namespace com.tod {
 		public static Canvas canvas = new Canvas(1000, 1000, 300, 500); // mm
         public static bool sprayLine = false;
         public static bool stream = false;
+		public static Version version = Version.Legacy;
 
 		static Config() {
 			Load();
@@ -71,6 +73,18 @@ namespace com.tod {
                                 if (bool.TryParse(value, out stream)) Config.stream = stream;
                                 break;
 
+							case "version":
+								string v = value?.ToLower();
+								switch (v) {
+									case "legacy":
+										version = Version.Legacy;
+										break;
+									case "zig":
+									case "zigzag":
+										version = Version.Zigzag;
+										break;
+								}
+								break;
                         }
 					}
 				}
