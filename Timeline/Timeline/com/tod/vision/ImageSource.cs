@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace com.tod.vision {
@@ -11,6 +12,8 @@ namespace com.tod.vision {
 
 		public event ImageEvent SourceUpdated;
 
+		private Thread m_ThrottleThread;
+		private Mat m_ThrottledMat;
 		protected bool m_IsActive;
 
 		public ImageSource() { }
@@ -38,6 +41,24 @@ namespace com.tod.vision {
 		}
 
 		protected void Update(Mat image) {
+
+			m_ThrottledMat = image;
+			if (m_ThrottleThread == null) {
+				m_ThrottleThread = new Thread(() => {
+					while (m_IsActive) {
+						Thread.Sleep(10);
+						if (m_ThrottledMat != null) {
+							SourceUpdated?.Invoke(m_ThrottledMat);
+							m_ThrottledMat = null;
+						}
+					}
+					m_ThrottleThread.Abort();
+					m_ThrottleThread = null;
+				});
+				m_ThrottleThread.Start();
+			}
+			return;
+			//
 			SourceUpdated?.Invoke(image);
 		}
 	}
