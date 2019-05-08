@@ -79,6 +79,7 @@
     <Compile Include="com\tod\sketch\legacy\TODDraw.cs" />
     <Compile Include="com\tod\sketch\Sketch.cs" />
     <Compile Include="com\tod\sketch\zigzag\Contour.cs" />
+    <Compile Include="com\tod\sketch\zigzag\LinkedContour.cs" />
     <Compile Include="com\tod\sketch\zigzag\PathUtils.cs" />
     <Compile Include="com\tod\sketch\zigzag\SimplifyJS.cs" />
     <Compile Include="com\tod\sketch\zigzag\Threshold.cs" />
