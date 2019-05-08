@@ -16,7 +16,7 @@ namespace com.tod.sketch {
 		public static MCvScalar BLACK = new Bgr(Color.Black).MCvScalar;
 		public static MCvScalar WHITE = new Bgr(Color.White).MCvScalar;
 
-		public static event SketchComplete SketchCompleted;
+		public event SketchComplete SketchCompleted;
 
 		private Portrait _face;
 

@@ -27,7 +27,7 @@ namespace com.tod.stream {
         private Thread m_Streamer;
         private object m_StreamLock = new object();
         private bool m_IsStreaming = false;
-        private bool m_AwaitingFeedback = false;
+        private bool m_AwaitingFeedback = true;
         private int m_CountPackets = 0;
         private bool m_Debug = true;
 
@@ -41,8 +41,9 @@ namespace com.tod.stream {
 		public void Open() {
 
             m_StreamQueue.Clear();
+			m_AwaitingFeedback = false;
 
-            if (m_ArduinoSerial.IsConnected) {
+			if (m_ArduinoSerial.IsConnected) {
                 lock (m_StreamLock) {
                     m_AwaitingFeedback = false;
                 }
@@ -124,26 +125,19 @@ namespace com.tod.stream {
             }
 		}
 
-		private static Thread s_DebugThread;
 		public void Stream(int xsteps, int ssteps, int esteps, int wrist) {
             const string pad5 = "D5";
-			string command = string.Format("q{0}_{1}_{2}_{3}", xsteps.ToString(pad5), ssteps.ToString(pad5), esteps.ToString(pad5), wrist);
+			string command = xsteps == 0 && ssteps == 0 && esteps == 0 && wrist == 0 ?
+				"1" :
+				string.Format("q{0}_{1}_{2}_{3}", xsteps.ToString(pad5), ssteps.ToString(pad5), esteps.ToString(pad5), wrist);
 
+			Logger.Instance.SilentLog("Stream {0}", command); 
 			try {
 				if (m_Debug) {
-					if (s_DebugThread == null) {
-						s_DebugThread = new Thread(() => {
-							Thread.Sleep(3000);
-							StreamCompleted?.Invoke();
-							s_DebugThread = null;
-						});
-						s_DebugThread.Start();
-					}
+					m_StreamQueue.Enqueue("1");
 				}
 				else {
-                    // Build/manage queue
                     m_StreamQueue.Enqueue(command);
-					//m_ArduinoSerial.Send(ref command);
 				}
 			}
 			catch (Exception ex) {
@@ -160,7 +154,17 @@ namespace com.tod.stream {
                     lock (m_StreamLock) {
                         m_AwaitingFeedback = true;
                     }
-                    Send(command);
+
+					if (command == "1") {
+						Send("q00000_00000_00000_0");
+						Thread.Sleep(1000);
+						m_StreamQueue.Clear();
+						StreamCompleted?.Invoke();
+					}
+					else {
+						Send(command);
+					}
+
                     Thread.Sleep(10);
                 }
                 else {
