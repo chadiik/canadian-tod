@@ -70,7 +70,7 @@ namespace com.tod.scenarios {
 
 				Sketch.SketchCompleted += OnSketchCompleted;
 				Logger.Instance.WriteLog("{0}{0}Scenario: NEW SKETCH{0}", Environment.NewLine);
-				Sketch sketch = new Sketch();
+				Sketch sketch = new Sketch(Config.version);
 				sketch.Draw(portrait);
 				state = State.ProcessingPortrait;
 			}
@@ -100,12 +100,17 @@ namespace com.tod.scenarios {
 				streamer.StreamCompleted += onStreamCompleted;
 
 				int job = -1;
-				job = ik.Convert(sketch, (int xsteps, int ssteps, int esteps, int wrist) => {
-					//Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
-					streamer.Stream(Math.Abs(xsteps), Math.Abs(ssteps), Math.Abs(esteps), Math.Abs(wrist));
-				});
-
-				Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
+				if (Config.stream) {
+					job = ik.Convert(sketch, (int xsteps, int ssteps, int esteps, int wrist) => {
+						//Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
+						streamer.Stream(Math.Abs(xsteps), Math.Abs(ssteps), Math.Abs(esteps), Math.Abs(wrist));
+					});
+					Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
+				}
+				else {
+					System.Threading.Thread.Sleep(200);
+					streamer.Stream(0, 0, 0, 0);
+				}
 			};
 
 			Connection onConnectionEstablished = null;
