@@ -116,6 +116,7 @@ namespace Timeline {
 						SetSource(container, value);
 				}
 				catch (ObjectDisposedException) { }
+				catch (System.ComponentModel.InvalidAsynchronousStateException) { }
 			}
 		}
 
