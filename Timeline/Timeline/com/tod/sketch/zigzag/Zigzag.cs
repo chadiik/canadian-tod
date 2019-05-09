@@ -9,7 +9,7 @@ using Emgu.CV.Structure;
 using System.Drawing;
 using System.Threading;
 
-namespace com.tod.sketch {
+namespace com.tod.sketch.zigzag {
 
 	public class Zigzag {
 

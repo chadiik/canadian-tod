@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace com.tod.sketch {
+namespace com.tod.sketch.zigzag {
 
 	public class Segment : IEnumerable<Segment> {
 
