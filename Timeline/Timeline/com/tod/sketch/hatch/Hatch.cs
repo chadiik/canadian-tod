@@ -20,15 +20,17 @@ namespace com.tod.sketch.hatch {
 			public double minArea = 240;
 
 			public static Parameters Default(int numThresholds) {
-				Threshold[] thresholds = new Threshold[numThresholds];
+				Threshold[] thresholds = new Threshold[numThresholds + 1];
 
 				for (int i = 0; i < numThresholds; i++) {
 					int low = (int)((double)(i + 1) / (numThresholds + 1) * 255);
 					int high = (int)((double)(i + 2) / (numThresholds + 1) * 255);
-					Threshold threshold = new Threshold { low = low, high = high };
-					Logger.Instance.WriteLog("threshold {0}: {1}", i, threshold);
-					thresholds[i] = threshold;
+					
+					thresholds[i + 1] = new Threshold { low = low, high = high };
+					//Logger.Instance.WriteLog("threshold {0}: {1}", i, thresholds[i]);
 				}
+
+				thresholds[0] = new Threshold { low = 0, high = thresholds[1].low};
 
 				return new Parameters() { thresholds = thresholds };
 			}
@@ -38,8 +40,14 @@ namespace com.tod.sketch.hatch {
 
 		public void Draw(Portrait portrait, Parameters parameters) {
 
-			Image<Gray, byte> filteredSource = Preprocess(portrait);
-			filteredSource = TestData(new Rectangle(0, 0, filteredSource.Width, filteredSource.Height));
+			const int hMax = 500;
+			double scale = 1;
+			Image<Bgr, byte> sourceImage = TODFilters.ScaleToFit(portrait.source, hMax, out scale);
+			Sketch.ShowProcessImage(sourceImage, "source");
+
+			Image<Gray, byte> filteredSource = Preprocess(sourceImage.Clone());
+			//filteredSource = TestData(new Rectangle(0, 0, filteredSource.Width, filteredSource.Height));
+			filteredSource = filteredSource.Add(new Gray(1));
 			Sketch.ShowProcessImage(filteredSource, "filteredSource");
 
 			Rectangle mapRect = new Rectangle(2, 2, filteredSource.Width - 4, filteredSource.Height - 4);
@@ -57,26 +65,31 @@ namespace com.tod.sketch.hatch {
 						allContours.Add(contour);
 			}
 
+			Image<Gray, byte> regionsMask = new Image<Gray, byte>(filteredSource.Size);
+			foreach (Contour contour in allContours)
+				contour.Fill(regionsMask, new Gray(255));
+			GetCenterMask(mapRect, parameters.minArea / 8.0).Fill(regionsMask, new Gray(255));
+
+			regionsMask._Dilate(4);
+			regionsMask._Erode(2);
+			regionsMask._Dilate(4);
+
+			Sketch.ShowProcessImage(regionsMask, "RegionsMask");
+
+			Sketch.ShowProcessImage(regionsMap.Clone(), "RegionsMap unmasked");
+			regionsMap._Min(regionsMask);
+			regionsMask._ThresholdBinaryInv(new Gray(127), new Gray(255));
+			regionsMap._Max(regionsMask);
 			Sketch.ShowProcessImage(regionsMap, "RegionsMap");
 
-			(new Thread(() => {
+			//(new Thread(() => {
 
-				Hatcher hatcher = new Hatcher(allContours, parameters.thresholds, regionsMap);
+				Hatcher hatcher = new Hatcher(parameters.thresholds, regionsMap, sourceImage.Clone());
 				SketchCompleted?.Invoke(new List<TP>() { new TP(1000, 1000), new TP(1000, 1000) });
-			})).Start();
+			//})).Start();
 		}
 
-		private Image<Gray, byte> Preprocess(Portrait portrait) {
-
-			const int hMax = 500;
-
-			// Scale and apply easy filter
-			double scale = 1;
-			Image<Bgr, byte> sourceImage = portrait.source.Clone();
-			sourceImage = TODFilters.ScaleToFit(sourceImage, hMax, out scale);
-			Sketch.ShowProcessImage(sourceImage, "source");
-
-			portrait.ScaleRect(scale);
+		private Image<Gray, byte> Preprocess(Image<Bgr, byte> sourceImage) {
 
 			CvInvoke.FastNlMeansDenoisingColored(sourceImage, sourceImage, 3f, 10f, 7, 13);
 
@@ -106,6 +119,24 @@ namespace com.tod.sketch.hatch {
 				if (label)
 					CvInvoke.PutText(image, (i - 1).ToString(), points[i - 1], Emgu.CV.CvEnum.FontFace.HersheyPlain, 1, lineColor, 1);
 			}
+		}
+
+		private static Contour GetCenterMask(Rectangle rect, double edgeLength) {
+
+			Contour contour = Contour.FromRect(rect);
+			contour.Subdivide(edgeLength);
+
+			Random rand = new Random();
+			Point center = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+			for(int i = 0, numPoints = contour.points.Count; i < numPoints; i++) {
+				Point p = contour.points[i];
+				double toCenterX = center.X - p.X,
+					toCenterY = center.Y - p.Y;
+				double offset = .2 + rand.NextDouble() * .4;
+				contour.points[i] = new Point((int)(p.X + toCenterX * offset), (int)(p.Y + toCenterY * offset));
+			}
+
+			return contour;
 		}
 
 		private static Image<Gray, byte> TestData(Rectangle rect) {
