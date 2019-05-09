@@ -83,6 +83,9 @@ namespace com.tod {
 									case "zigzag":
 										version = Version.Zigzag;
 										break;
+									case "hatch":
+										version = Version.Hatch;
+										break;
 								}
 								break;
                         }

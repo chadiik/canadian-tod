@@ -10,5 +10,5 @@ stream=false
 # sample is the video entry for debug mode
 sample=faces.mp4
 
-# sketch routine's version: 'legacy' (orbital path tracing) or 'zigzag'
-version=zigzag
+# sketch routine's version: 'legacy' (orbital path tracing) or 'hatch'
+version=hatch

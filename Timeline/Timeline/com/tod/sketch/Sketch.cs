@@ -1,4 +1,6 @@
 ﻿using com.tod.core;
+using com.tod.sketch.hatch;
+using com.tod.sketch.zigzag;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -16,7 +18,7 @@ namespace com.tod.sketch {
 
 	public class Sketch {
 
-		public enum Version { Legacy, Zigzag };
+		public enum Version { Legacy, Zigzag, Hatch };
 
 		public static readonly MCvScalar BLACK = new Bgr(Color.Black).MCvScalar;
 		public static readonly MCvScalar WHITE = new Bgr(Color.White).MCvScalar;
@@ -26,6 +28,7 @@ namespace com.tod.sketch {
 
 		private TODDraw m_TODDraw;
 		private Zigzag m_Zigzag;
+		private Hatch m_Hatch;
 		private Version m_Version;
 
 		public Sketch(Version version) {
@@ -41,6 +44,11 @@ namespace com.tod.sketch {
 				case Version.Zigzag:
 					m_Zigzag = new Zigzag();
 					m_Zigzag.SketchCompleted += path => SketchCompleted?.Invoke(path);
+					break;
+
+				case Version.Hatch:
+					m_Hatch = new Hatch();
+					m_Hatch.SketchCompleted += path => SketchCompleted?.Invoke(path);
 					break;
 			}
 		}
@@ -65,6 +73,10 @@ namespace com.tod.sketch {
 
 				case Version.Zigzag:
 					m_Zigzag.Draw(portrait, Zigzag.Parameters.Default(3));
+					break;
+
+				case Version.Hatch:
+					m_Hatch.Draw(portrait, Hatch.Parameters.Default(3));
 					break;
 			}
 		}
