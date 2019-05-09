@@ -14,10 +14,12 @@ namespace com.tod.sketch {
 
 		public List<Point> points;
 		public double area;
+		public Point centroid;
 
 		public Contour(List<Point> points, double area) {
 			this.points = points;
 			this.area = area;
+			centroid = chadiik.geom.PathUtils.FindCentroid(this.points);
 		}
 
 		public void Simplify(int tolerance, bool highestQuality = false) {
@@ -36,6 +38,12 @@ namespace com.tod.sketch {
 					return false;
 			
 			return true;
+		}
+
+		public double DistanceSquaredTo(Point b) {
+			int dx = b.X - centroid.X;
+			int dy = b.Y - centroid.Y;
+			return dx * dx + dy * dy;
 		}
 
 		public void Subdivide(double maxEdgeLength) {
@@ -80,7 +88,6 @@ namespace com.tod.sketch {
 							break;
 
 					if (i == numPoints) {
-						Logger.Instance.WriteLog("Contour contained in other");
 						return true;
 					}
 				}
@@ -89,10 +96,14 @@ namespace com.tod.sketch {
 			return false;
 		}
 
+		public void Fill(Image<Gray, byte> image, Gray color) {
+			image.Draw(points.ToArray(), color, -1);
+		}
+
 		public void Visualize(IInputOutputArray image, MCvScalar lineColor, int lineThickness) {
-			for(int i = 0, numPoints = points.Count; i < numPoints; i++) {
+			for(int i = 0, numPoints = points.Count; i < numPoints; i++)
 				CvInvoke.Line(image, points[i], points[(i + 1) % numPoints], lineColor, lineThickness);
-			}
+			CvInvoke.Circle(image, centroid, 2, new MCvScalar(0, 255, 0), 2);
 		}
 
 		public static List<Contour> Extract(IInputOutputArray binary) {

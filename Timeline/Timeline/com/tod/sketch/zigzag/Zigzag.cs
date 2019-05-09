@@ -26,7 +26,7 @@ namespace com.tod.sketch.zigzag {
 					int low = (int)((double)(i + 1) / (numThresholds + 1) * 255);
 					int high = (int)((double)(i + 2) / (numThresholds + 1) * 255);
 					Threshold threshold = new Threshold { low = low, high = high };
-					Logger.Instance.WriteLog("threshold {0}: {1}", i, threshold);
+					//Logger.Instance.WriteLog("threshold {0}: {1}", i, threshold);
 					thresholds[i] = threshold;
 				}
 

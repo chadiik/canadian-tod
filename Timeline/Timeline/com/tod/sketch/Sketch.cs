@@ -76,7 +76,7 @@ namespace com.tod.sketch {
 					break;
 
 				case Version.Hatch:
-					m_Hatch.Draw(portrait, Hatch.Parameters.Default(3));
+					m_Hatch.Draw(portrait, Hatch.Parameters.Default(5));
 					break;
 			}
 		}

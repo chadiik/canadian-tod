@@ -21,7 +21,7 @@ namespace com.tod.sketch {
 			IsNull = isNull;
 		}
 
-		public Boolean IsDown {
+		public bool IsDown {
 			get { return x > -.1f && y > -.1f; }
 		}
 
@@ -46,8 +46,31 @@ namespace com.tod.sketch {
 			return x == point.x && y == point.y;
 		}
 
+		public Point ToPoint() {
+			return new Point((int)x, (int)y);
+		}
+
 		public override string ToString() {
-			return String.Format("TP({0}, {1})", x.ToString(), y.ToString());
+			return string.Format("TP({0}, {1})", x.ToString(), y.ToString());
+		}
+
+		public static void Visualize(List<TP> points, Emgu.CV.IInputOutputArray image, Emgu.CV.Structure.MCvScalar lineColor, int lineThickness) {
+			bool penDown = false;
+			TP previous = Null;
+			for (int i = 0, numPoints = points.Count; i < numPoints; i++) {
+				if (points[i].IsDown) {
+					if (!penDown) {
+						penDown = true;
+					}
+					else {
+						Emgu.CV.CvInvoke.Line(image, previous.ToPoint(), points[i].ToPoint(), lineColor, lineThickness);
+					}
+					previous = points[i];
+				}
+				else {
+					penDown = false;
+				}
+			}
 		}
 	}
 

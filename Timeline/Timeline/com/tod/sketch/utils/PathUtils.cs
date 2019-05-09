@@ -59,6 +59,28 @@ namespace chadiik.geom {
 			return new Vector2(c.X / numVerts, c.Y / numVerts);
 		}
 
+		public static Vector2 FindCentroid(List<Vector2> pts) {
+
+			int nPts = pts.Count;
+			Vector2 off = pts[0];
+			double twicearea = 0;
+			double x = 0;
+			double y = 0;
+			Vector2 p1, p2;
+			double f;
+			for (int i = 0, j = nPts - 1; i < nPts; j = i++) {
+				p1 = pts[i];
+				p2 = pts[j];
+				f = (p1.X - off.X) * (p2.Y - off.Y) - (p2.X - off.X) * (p1.Y - off.Y);
+				twicearea += f;
+				x += (p1.X + p2.X - 2 * off.X) * f;
+				y += (p1.Y + p2.Y - 2 * off.Y) * f;
+			}
+			f = twicearea * 3;
+
+			return new Vector2((int)(x / f + off.X), (int)(y / f + off.Y));
+		}
+
 		public static double Magnitude(Vector2 p) {
 			return Math.Sqrt(p.X * p.X + p.Y * p.Y);
 		}

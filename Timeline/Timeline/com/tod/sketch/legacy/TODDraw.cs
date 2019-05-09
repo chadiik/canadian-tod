@@ -329,7 +329,7 @@ namespace com.tod.sketch {
 			return new Rectangle((int)rect.x, (int)rect.y, (int)rect.w, (int)rect.h);
 		}
 		private TRect FromRect(Rectangle rect) {
-			return new TRect((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
+			return new TRect(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
 		private int _index = 0;
@@ -338,8 +338,8 @@ namespace com.tod.sketch {
 			int scale = 3;
 			int w = _sourceImage.Cols * scale;
 			int h = _sourceImage.Rows * scale;
-			float wf = (float)w;
-			float hf = (float)h;
+			float wf = w;
+			float hf = h;
 
             bool sprayLine = Config.sprayLine;
 			for (int i = 0; i < 100; i++) {
