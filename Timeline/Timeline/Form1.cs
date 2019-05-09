@@ -25,7 +25,7 @@ namespace Timeline {
 		public Form1() {
 			InitializeComponent();
 			FormClosed += OnFormClosed;
-            KeyDown += OnKeyDown;
+			ContextMenu = CreateContextMenu();
 
 			Config.fps = 4;
 			Config.files.ikJobsDir = "../../../../IK Solver/simpleIK_sharp/bin/Debug/";
@@ -39,16 +39,13 @@ namespace Timeline {
 			Start();
 		}
 
-        private void OnKeyDown(object sender, KeyEventArgs e) {
-
-            switch (e.KeyCode) {
-                case Keys.Space:
-                    if (e.Control) {
-                        m_Scenario.Pause();
-                    }
-                    break;
-            }
-        }
+		private ContextMenu CreateContextMenu() {
+			ContextMenu cm = new ContextMenu();
+			cm.MenuItems.Add("Pause", new EventHandler((object sender, EventArgs e) => m_Scenario.Pause()));
+			cm.MenuItems.Add("Resume", new EventHandler((object sender, EventArgs e) => m_Scenario.Resume()));
+			cm.MenuItems[1].Enabled = false;
+			return cm;
+		}
 
         private void Debug() {
 

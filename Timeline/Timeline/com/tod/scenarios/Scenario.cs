@@ -50,13 +50,19 @@ namespace com.tod.scenarios {
 
             ik.Paused = true;
             streamer.Pause();
-        }
+			vision.Pause();
+
+			Logger.Instance.WriteLog("Scenario: Paused");
+		}
 
         public void Resume() {
 
             ik.Paused = false;
             streamer.Resume();
-        }
+			vision.Resume();
+
+			Logger.Instance.WriteLog("Scenario: Resumed");
+		}
 
 		public void Stop() {
 

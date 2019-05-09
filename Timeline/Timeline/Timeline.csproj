@@ -81,9 +81,11 @@
     <Compile Include="com\tod\sketch\zigzag\Contour.cs" />
     <Compile Include="com\tod\sketch\zigzag\LinkedContour.cs" />
     <Compile Include="com\tod\sketch\zigzag\PathUtils.cs" />
+    <Compile Include="com\tod\sketch\zigzag\Probe.cs" />
     <Compile Include="com\tod\sketch\zigzag\SimplifyJS.cs" />
     <Compile Include="com\tod\sketch\zigzag\Threshold.cs" />
     <Compile Include="com\tod\sketch\zigzag\Zigzag.cs" />
+    <Compile Include="com\tod\sketch\zigzag\Zigzagger.cs" />
     <Compile Include="com\tod\stream\CanadianStreamer.cs" />
     <Compile Include="com\tod\stream\legacy\PathStream.cs" />
     <Compile Include="com\tod\stream\legacy\TODCmd.cs" />

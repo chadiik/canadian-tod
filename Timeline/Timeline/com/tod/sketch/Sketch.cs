@@ -64,7 +64,7 @@ namespace com.tod.sketch {
 					break;
 
 				case Version.Zigzag:
-					m_Zigzag.Draw(portrait, Zigzag.Parameters.Default(4));
+					m_Zigzag.Draw(portrait, Zigzag.Parameters.Default(3));
 					break;
 			}
 		}

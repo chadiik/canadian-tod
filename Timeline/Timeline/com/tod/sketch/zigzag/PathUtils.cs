@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Vector2 = System.Drawing.Point;
+using PointF = System.Drawing.PointF;
 
 namespace chadiik.geom {
 
@@ -25,6 +26,27 @@ namespace chadiik.geom {
 		public static bool IsClockWise ( float polygonArea ) {
 
 			return polygonArea < 0;
+		}
+
+		public static PointF GetNormal(Vector2 p, Vector2 c, Vector2 n) {
+
+			/*
+			Vector2 pc = new Vector2(p.X - c.X, p.Y - c.Y),
+				cn = new Vector2(c.X - n.X, c.Y - n.Y);
+			pc.Set(-pc.y, pc.x);
+			cn.Set(-cn.y, cn.x);
+			*/
+
+			Vector2 pc = new Vector2(-(p.Y - c.Y), p.X - c.X),
+				cn = new Vector2(-(c.Y - n.Y), c.X - n.X);
+
+			float pcm = (float)Math.Sqrt(pc.X * pc.X + pc.Y * pc.Y),
+				cnm = (float)Math.Sqrt(cn.X * cn.X + cn.Y * cn.Y);
+
+			// return (pc / pcm + cn / cnm).normalized;
+			PointF normal = new PointF(pc.X / pcm + cn.X / cnm, pc.Y / pcm + cn.Y / cnm);
+			float nMag = (float)Math.Sqrt(normal.X * normal.X + normal.Y * normal.Y);
+			return new PointF(normal.X / nMag, normal.Y / nMag);
 		}
 
 		public static Vector2 CalculateMeanCenter ( List<Vector2> path ) {
@@ -111,48 +133,53 @@ namespace chadiik.geom {
 		public static bool SegmentIntersect ( Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection ) {
 			return SegmentIntersect( p1.X, p1.Y, p2.X, p2.Y, p3.X, p3.Y, p4.X, p4.Y, out intersection);
 		}
-		public static bool SegmentIntersect ( float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, out Vector2 intersection ) {
 
-			intersection = default ( Vector2 );
+		public static bool SegmentIntersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, out Vector2 intersection) {
 
 			// Check if none of the lines are of length 0
-			if ( ( x1 == x2 && y1 == y2 ) || ( x3 == x4 && y3 == y4 ) ) {
+			if ((x1 == x2 && y1 == y2) || (x3 == x4 && y3 == y4)) {
+				intersection = default(Vector2);
 				return false;
 			}
 
-			var denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+			float denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 
 			// Lines are parallel
-			if ( Math.Abs ( denominator ) < float.Epsilon ) {
+			if (Math.Abs(denominator) < float.Epsilon) {
+				intersection = default(Vector2);
 				return false;
 			}
 
-			var ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
-			var ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
+			float ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+			float ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
 
 			// is the intersection along the segments
-			if ( ua > 0 || ua < 1 || ub > 0 || ub < 1 ) return false;
+			if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+				intersection = default(Vector2);
+				return false;
+			}
 
 			// Return a object with the x and y coordinates of the intersection
-			var x = x1 + ua * (x2 - x1);
-			var y = y1 + ua * (y2 - y1);
+			float x = x1 + ua * (x2 - x1);
+			float y = y1 + ua * (y2 - y1);
 
-			intersection = new Vector2 ( (int)x, (int)y );
+			intersection = new Vector2((int)x, (int)y);
 			return true;
 		}
 
 		// https://stackoverflow.com/a/1501725/1712403
-		public static double DistanceToSegmentSquared ( Vector2 p, Vector2 v, Vector2 w) {
+		public static double DistanceToSegmentSquared(Vector2 p, Vector2 v, Vector2 w) {
 			float dx = w.X - v.X,
 				dy = w.Y - v.Y;
 			float l2 = dx * dx + dy * dy;
-			if ( l2 == 0 ) return ( dx = v.X - p.X ) * dx + ( dy = v.Y - p.Y ) * dy;
-			float t = Math.Max(0, Math.Min(1, ( ( (p.X - v.X) * dx + (p.Y - v.Y) * dy) / l2 )));
+			if (l2 == 0) return (dx = v.X - p.X) * dx + (dy = v.Y - p.Y) * dy;
+			float t = Math.Max(0, Math.Min(1, (((p.X - v.X) * dx + (p.Y - v.Y) * dy) / l2)));
 
-			dx = v.X + t * ( w.X - v.X ) - p.X;
-			dy = v.Y + t * ( w.Y - v.Y ) - p.Y;
+			dx = v.X + t * (w.X - v.X) - p.X;
+			dy = v.Y + t * (w.Y - v.Y) - p.Y;
 			return dx * dx + dy * dy;
 		}
+
 		public static double DistanceToSegment ( Vector2 p, Vector2 v, Vector2 w ) { return Math.Sqrt ( DistanceToSegmentSquared ( p, v, w ) ); }
 	}
 }

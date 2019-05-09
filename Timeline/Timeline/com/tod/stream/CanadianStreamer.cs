@@ -148,7 +148,7 @@ namespace com.tod.stream {
         private void ConsumeStreamQueue() {
 
             while (true) {
-                Logger.Instance.SilentLog("ConsumeStreamQueue {0} | {1} | {2}", m_IsStreaming, !m_AwaitingFeedback, m_StreamQueue.Count);
+                
                 if (m_IsStreaming && !m_AwaitingFeedback && m_StreamQueue.Count > 0) {
                     string command = m_StreamQueue.Dequeue();
                     lock (m_StreamLock) {

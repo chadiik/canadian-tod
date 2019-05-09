@@ -24,26 +24,41 @@ namespace com.tod.sketch {
 			points = chadiik.algorithms.SimplifyJS.Simplify(points, tolerance, highestQuality);
 		}
 
+		public void Close() {
+			if (points[0] != points[points.Count - 1])
+				points.Add(points[0]);
+		}
+
+		public bool IsWithin(Rectangle rect) {
+			int numVertices = points.Count;
+			for(int i = 0; i < numVertices; i++)
+				if (!rect.Contains(points[i]))
+					return false;
+			
+			return true;
+		}
+
 		public void Subdivide(double maxEdgeLength) {
 
-			int numVertices = points.Count;
-			List<Point> newPoints = new List<Point>((int)Math.Ceiling(numVertices * (.75 / maxEdgeLength)));
+			int numPoints = points.Count;
+			List<Point> newPoints = new List<Point>((int)Math.Ceiling(numPoints * (.75 / maxEdgeLength)));
 
 			newPoints.Add(new Point ( points[0].X, points[0].Y));
-			for (int i = 1; i < numVertices; i++) {
+			for (int i = 1; i < numPoints; i++) {
 
 				Point a = points[i - 1];
 				Point b = points[i];
 
-				Point aToB = new Point(b.X - a.X, b.Y - a.Y);
-				double distance = chadiik.geom.PathUtils.Magnitude(aToB);
+				PointF aToB = new PointF(b.X - a.X, b.Y - a.Y);
+				double distance = Math.Sqrt(aToB.X * aToB.X + aToB.Y * aToB.Y);
 				int subdivisions = (int)Math.Ceiling(distance / maxEdgeLength);
+				//Logger.Instance.WriteLog("Subdivide(distance={0}, subdivisions={1})", distance.ToString(".00"), subdivisions);
 				if (subdivisions > 1) {
 
-					Point aToBSubdivision = new Point(aToB.X / subdivisions, aToB.Y / subdivisions);
+					PointF aToBSubdivision = new PointF(aToB.X / subdivisions, aToB.Y / subdivisions);
 					for (int s = 1; s < subdivisions; s++) {
 
-						newPoints.Add(new Point ( a.X + aToBSubdivision.X * s, a.Y + aToBSubdivision.Y * s));
+						newPoints.Add(new Point ( (int)(a.X + aToBSubdivision.X * s), (int)(a.Y + aToBSubdivision.Y * s)));
 					}
 				}
 
@@ -53,7 +68,28 @@ namespace com.tod.sketch {
 			points = newPoints;
 		}
 
-		public void Draw(IInputOutputArray image, MCvScalar lineColor, int lineThickness) {
+		public bool ContainedIn(List<Contour> contours) {
+
+			int numPoints = points.Count;
+			foreach (Contour compare in contours) {
+
+				if (compare.points.Count == numPoints) {
+					int i = 0;
+					for (; i < numPoints; i++)
+						if (points[i] != compare.points[i])
+							break;
+
+					if (i == numPoints) {
+						Logger.Instance.WriteLog("Contour contained in other");
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		public void Visualize(IInputOutputArray image, MCvScalar lineColor, int lineThickness) {
 			for(int i = 0, numPoints = points.Count; i < numPoints; i++) {
 				CvInvoke.Line(image, points[i], points[(i + 1) % numPoints], lineColor, lineThickness);
 			}
@@ -76,6 +112,15 @@ namespace com.tod.sketch {
 			}
 
 			return contours;
+		}
+
+		public static Contour FromRect(Rectangle rect) {
+			return new Contour(new List<Point> {
+				new Point(rect.X, rect.Y),
+				new Point(rect.X + rect.Width, rect.Y),
+				new Point(rect.X + rect.Width, rect.Y + rect.Height),
+				new Point(rect.X, rect.Y + rect.Height)
+			}, rect.Width * rect.Height);
 		}
 	}
 }

@@ -66,6 +66,14 @@ namespace com.tod.vision {
 			FacesPool.CandidateFound += OnCandidateFound;
 		}
 
+		public void Resume() {
+			m_Source.Start();
+		}
+
+		public void Pause() {
+			m_Source.Pause();
+		}
+
 		public void Stop() {
 			m_Source.Stop();
 		}

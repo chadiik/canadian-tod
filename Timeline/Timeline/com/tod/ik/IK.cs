@@ -22,9 +22,8 @@ namespace com.tod.ik {
         private bool m_Paused = false;
 
         public bool Paused {
-            set {
-                m_Paused = value;
-            }
+			get { return m_Paused; }
+            set { m_Paused = value; }
         }
 
 		public void Stop() {

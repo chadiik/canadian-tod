@@ -34,6 +34,11 @@ namespace com.tod.vision {
 			base.Start();
 		}
 
+		public new void Pause() {
+			m_IsActive = false;
+			base.Pause();
+		}
+
 		public virtual new void Stop() {
 			m_IsActive = false;
 			base.Stop();

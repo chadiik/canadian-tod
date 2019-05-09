@@ -14,6 +14,7 @@ namespace com.tod.vision {
 		int Width { get; }
 		int Height { get; }
 		void Start();
+		void Pause();
 		void Stop();
 	}
 }

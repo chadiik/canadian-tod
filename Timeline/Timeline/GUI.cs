@@ -90,6 +90,7 @@ namespace Timeline {
 					AppendText(box, text);
 			}
 			catch (ObjectDisposedException) { }
+			catch (System.ComponentModel.InvalidAsynchronousStateException) { }
 		}
 
 		private static void AppendText(TextBox box, string text) {
