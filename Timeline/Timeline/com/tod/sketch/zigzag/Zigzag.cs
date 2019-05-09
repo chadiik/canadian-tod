@@ -7,6 +7,7 @@ using com.tod.core;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Drawing;
+using System.Threading;
 
 namespace com.tod.sketch {
 
@@ -15,7 +16,8 @@ namespace com.tod.sketch {
 		public class Parameters {
 
 			public Threshold[] thresholds;
-			public int precision = 1;
+			public int simplify = 1, subdivide = 6;
+			public double minArea = 240;
 
 			public static Parameters Default(int numThresholds) {
 				Threshold[] thresholds = new Threshold[numThresholds];
@@ -24,6 +26,7 @@ namespace com.tod.sketch {
 					int low = (int)((double)(i + 1) / (numThresholds + 1) * 255);
 					int high = (int)((double)(i + 2) / (numThresholds + 1) * 255);
 					Threshold threshold = new Threshold { low = low, high = high };
+					Logger.Instance.WriteLog("threshold {0}: {1}", i, threshold);
 					thresholds[i] = threshold;
 				}
 
@@ -35,28 +38,42 @@ namespace com.tod.sketch {
 
 		public void Draw(Portrait portrait, Parameters parameters) {
 
-			Image<Gray, byte>  filteredSource = Preprocess(portrait);
+			Image<Gray, byte> filteredSource = Preprocess(portrait);
+			filteredSource = TestData(new Rectangle(0, 0, filteredSource.Width, filteredSource.Height));
+			Sketch.ShowProcessImage(filteredSource, "filteredSource");
 
+			Rectangle mapRect = new Rectangle(2, 2, filteredSource.Width - 4, filteredSource.Height - 4);
+			Image<Gray, byte> regionsMap = new Image<Gray, byte>(filteredSource.Size);
 			List<Contour> allContours = new List<Contour>();
 			for (int i = 0; i < parameters.thresholds.Length; i++) {
 				Threshold threshold = parameters.thresholds[i];
-				List<Contour> contours = threshold.GetContours(filteredSource);
-				foreach (Contour contour in contours) {
-					int preNum = contour.points.Count;
-					contour.Simplify(parameters.precision);
-					//contour.Subdivide(parameters.precision);
-				}
-				allContours.AddRange(contours);
+				Image<Gray, byte> binary = filteredSource.Clone();
+				List <Contour> contours = threshold.GetContours(binary, true);
+				Sketch.ShowProcessImage(binary, i.ToString());
+				regionsMap._Max(binary);
+
+				foreach (Contour contour in contours)
+					if (contour.area > parameters.minArea && contour.IsWithin(mapRect) && !contour.ContainedIn(allContours))
+						allContours.Add(contour);
 			}
 
-			// preview
-			Image<Gray, byte> contoursPreview = new Image<Gray, byte>(filteredSource.Size);
-			MCvScalar lineColor = new Bgr(Color.White).MCvScalar;
-			foreach (Contour contour in allContours) contour.Draw(contoursPreview, lineColor, 1);
-			Sketch.ShowProcessImage(contoursPreview, string.Format("Contours [{0}]", "all"));
-			// end preview
+			Sketch.ShowProcessImage(regionsMap, "RegionsMap");
 
-			SketchCompleted?.Invoke(new List<TP>() { new TP(1000, 1000), new TP(1000, 1000) });
+			List<LinkedContour> linkedContours = new List<LinkedContour>();
+			foreach(Contour contour in allContours) {
+				contour.Close();
+				contour.Simplify(parameters.simplify);
+				//contour.Subdivide(parameters.subdivide);
+
+				LinkedContour linkedContour = LinkedContour.FromContour(contour);
+				linkedContours.Add(linkedContour);
+			}
+
+			(new Thread(() => {
+
+				Zigzagger zigzagger = new Zigzagger(linkedContours, parameters.thresholds, regionsMap);
+				SketchCompleted?.Invoke(new List<TP>() { new TP(1000, 1000), new TP(1000, 1000) });
+			})).Start();
 		}
 
 		private Image<Gray, byte> Preprocess(Portrait portrait) {
@@ -90,6 +107,29 @@ namespace com.tod.sketch {
 			//TODFilters.Sharpen(coloredGF, 12);
 
 			return filtered;
+		}
+
+		public static void Visualize(List<Point> points, IInputOutputArray image, MCvScalar lineColor, int lineThickness, bool label) {
+			for (int i = 1, numPoints = points.Count; i < numPoints; i++) {
+				CvInvoke.Line(image, points[i - 1], points[i], lineColor, lineThickness);
+				
+				if (label)
+					CvInvoke.PutText(image, (i - 1).ToString(), points[i - 1], Emgu.CV.CvEnum.FontFace.HersheyPlain, 1, lineColor, 1);
+			}
+		}
+
+		private static Image<Gray, byte> TestData(Rectangle rect) {
+			Image<Gray, byte> data = new Image<Gray, byte>(rect.Width, rect.Height);
+
+			int wn = rect.Width / 6,
+				hn = rect.Height / 6;
+			Rectangle larger = new Rectangle(rect.X + wn, rect.Y + hn, rect.Width - wn * 2, rect.Height - hn * 2);
+			Rectangle smaller = new Rectangle(rect.X + wn * 2, rect.Y + hn * 2, rect.Width - wn * 4, rect.Height - hn * 4);
+
+			CvInvoke.Rectangle(data, larger, new MCvScalar(100, 100, 100), -1);
+			CvInvoke.Rectangle(data, smaller, new MCvScalar(200, 200, 200), -1);
+
+			return data;
 		}
 	}
 }

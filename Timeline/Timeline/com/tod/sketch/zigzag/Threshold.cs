@@ -15,14 +15,28 @@ namespace com.tod.sketch {
 
 		public int low = 0, high = 255;
 
-		public List<Contour> GetContours(Image<Gray, byte> source) {
+		public int Brightness { get { return low; } }
+		public double Angle { get { return low / 255.0 * (Math.PI / 4.0) + Math.PI / 4.0; } }
+		public double SpreadAngle { get { return Math.PI / 2.0 / 9.0; } }
 
-			Image<Gray, byte> binary = new Image<Gray, byte>(source.Size);
-			CvInvoke.Threshold(source, binary, low, low, ThresholdType.Binary);
-			//Sketch.ShowProcessImage(binary, string.Format("Threshold [{0}]", low));
+		public List<Contour> GetContours(Image<Gray, byte> source, bool modifySourceImage) {
+
+			Image<Gray, byte> binary;
+			if (modifySourceImage) {
+				source._ThresholdBinary(new Gray(low), new Gray(low));
+				binary = source;
+			}
+			else {
+				binary = new Image<Gray, byte>(source.Size);
+				CvInvoke.Threshold(source, binary, low, high, ThresholdType.Binary);
+			}
 
 			List<Contour> contours = Contour.Extract(binary);
 			return contours;
+		}
+
+		public override string ToString() {
+			return string.Format("Threshold({0}, {1}) -> Brightness={2}|Angle={3}|SpreadAngle={4}", low, high, Brightness, Angle.ToString(".00"), SpreadAngle.ToString(".00"));
 		}
 	}
 }
