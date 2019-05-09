@@ -68,6 +68,9 @@
     <Compile Include="com\tod\Logger.cs" />
     <Compile Include="com\tod\sketch\hatch\Hatch.cs" />
     <Compile Include="com\tod\sketch\hatch\Hatcher.cs" />
+    <Compile Include="com\tod\sketch\hatch\HatchProbe.cs" />
+    <Compile Include="com\tod\sketch\hatch\HatchRegion.cs" />
+    <Compile Include="com\tod\sketch\hatch\Segment.cs" />
     <Compile Include="com\tod\sketch\legacy\ImageData.cs" />
     <Compile Include="com\tod\sketch\legacy\orbital\Orbit.cs" />
     <Compile Include="com\tod\sketch\legacy\orbital\OrbitalWanderer.cs" />
@@ -81,6 +84,7 @@
     <Compile Include="com\tod\sketch\legacy\TODDraw.cs" />
     <Compile Include="com\tod\sketch\Sketch.cs" />
     <Compile Include="com\tod\sketch\utils\Contour.cs" />
+    <Compile Include="com\tod\sketch\utils\LinesExtraction.cs" />
     <Compile Include="com\tod\sketch\zigzag\LinkedContour.cs" />
     <Compile Include="com\tod\sketch\utils\PathUtils.cs" />
     <Compile Include="com\tod\sketch\zigzag\Probe.cs" />
