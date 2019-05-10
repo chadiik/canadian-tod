@@ -114,7 +114,7 @@ namespace com.tod.scenarios {
 					Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
 				}
 				else {
-					System.Threading.Thread.Sleep(200);
+					System.Threading.Thread.Sleep(5000);
 					streamer.Stream(0, 0, 0, 0);
 				}
 			};

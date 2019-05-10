@@ -16,9 +16,9 @@ namespace com.tod.sketch {
 		public int low = 0, high = 255;
 
 		public int Brightness { get { return low; } }
-		public double Angle { get { return (.3 + (low / 255.0) * .6) * (Math.PI / 2.0); } }
+		public double Angle { get { return (.2 + (low / 255.0) * .7) * (Math.PI / 2.0); } }
 		public double SpreadAngle { get { return Math.PI / 2.0 / 9.0; } }
-		public double Spread { get { return Math.Pow((.2 + (low / 255.0) * .8), .5) * 5.0; } }
+		public double Spread { get { return Math.Pow((.3 + (low / 255.0) * .8), .7) * 5.0; } }
 
 		public List<Contour> GetContours(Image<Gray, byte> source, bool modifySourceImage) {
 
