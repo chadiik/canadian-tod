@@ -28,7 +28,7 @@ namespace com.tod.sketch {
 		}
 
 		public static Image<Bgr, byte> ScaleToFit(Image<Bgr, byte> source, int Rows, out double scale) {
-			scale = Rows / source.Rows;
+			scale = (double)Rows / source.Rows;
 			Image<Bgr, byte> scaled = source.Resize(scale, Inter.Linear);
 			return scaled;
 		}
