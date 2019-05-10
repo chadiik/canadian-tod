@@ -35,14 +35,14 @@ namespace com.tod.sketch.hatch {
 			x += nx * distance;
 			y += ny * distance;
 
-			return x > m_region.X && y > m_region.Y && y < m_region.Bottom && x < m_region.Right;
+			return x >= m_region.X && y >= m_region.Y && y <= m_region.Bottom && x <= m_region.Right;
 		}
 
 		public bool Next() {
 			x = m_XOffset += m_Spread;
 			y = -.0001;
 
-			double intersectionCheckLength = m_region.Height * 2;
+			double intersectionCheckLength = m_region.Height * 5.0;
 
 			Point a = new Point(m_region.X, m_region.Y),
 				b = new Point(m_region.X + m_region.Width, m_region.Y),

@@ -96,6 +96,19 @@ namespace com.tod.sketch {
 			return false;
 		}
 
+		public List<TP> ToPath() {
+			List<TP> path = new List<TP>();
+			int numPoints = points.Count;
+			if (numPoints > 1) {
+				path.Add(TP.PenUp);
+				path.Add(new TP(points[0].X, points[0].Y));
+				for (int i = 1; i < numPoints; i++)
+					path.Add(new TP(points[i].X, points[i].Y));
+				path.Add(TP.PenUp);
+			}
+			return path;
+		}
+
 		public void Fill(Image<Gray, byte> image, Gray color) {
 			image.Draw(points.ToArray(), color, -1);
 		}

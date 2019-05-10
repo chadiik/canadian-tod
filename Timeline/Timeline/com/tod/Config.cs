@@ -5,8 +5,58 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Security;
 
 namespace com.tod {
+
+	public class JSON {
+
+		public static string Serialize(object obj) {
+			return JsonConvert.SerializeObject(obj);
+		}
+
+		public static bool Save(string json, string name) {
+
+			try {
+				System.IO.File.WriteAllText(string.Format("config/{0}.json", name), json);
+			}
+			catch (SecurityException error) {
+				Console.WriteLine(
+@"Error writing file to {0}
+\n\terror:{1}
+\n\tcontent:{2}",
+				name, error.Message, json);
+				return false;
+			}
+
+			return true;
+		}
+
+		public static bool Save(object obj, string name) {
+			Save(Serialize(obj), name);
+			return true;
+		}
+
+		public static bool Load<T>(string name, out T result) {
+
+			result = default(T);
+			string path = string.Format("config/{0}.json", name);
+			if (!System.IO.File.Exists(path))
+				return false;
+
+			try {
+				string json = System.IO.File.ReadAllText(path);
+				result = JsonConvert.DeserializeObject<T>(json);
+				return true;
+			}
+			catch (Exception ex) {
+				Logger.Instance.ExceptionLog(ex.ToString());
+			}
+
+			return false;
+		}
+	}
 
 	class Files {
 		public string eyesHC;

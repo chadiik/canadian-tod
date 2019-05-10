@@ -16,29 +16,76 @@ namespace com.tod.sketch.hatch {
 
 		public Threshold[] thresholds;
 		public Image<Gray, byte> regionsMap;
+		public List<TP> path;
 
 		public event ProcessComplete ProcessCompleted;
 
-		public Hatcher(Threshold[] thresholds, Image<Gray, byte> regionsMap, Image<Bgr, byte> source) {
+		public Hatcher(Threshold[] thresholds, Image<Gray, byte> regionsMap) {
 
 			this.thresholds = thresholds;
 			this.regionsMap = regionsMap;
+		}
 
-			LineSegment2D[][] lines = LinesExtraction.From(source, new LinesExtraction.HoughParameters());
+		public void Process(Image<Bgr, byte> source, List<Contour> firstContours = null) {
+
+			Image<Bgr, byte> filtered;
+			LinesExtraction.HoughParameters hp;
+			if (!JSON.Load("hough-edges", out hp)) hp = new LinesExtraction.HoughParameters();
+			LinesExtraction.EdgesParameters ep;
+			if (!JSON.Load("edges", out ep)) ep = new LinesExtraction.EdgesParameters();
+			List<List<Point>> lines = LinesExtraction.Sobel(source, ep, hp, out filtered);
+
+			byte[,,] regionsData = regionsMap.Data;
+			foreach (List<Point> points in lines) {
+				for (int i = 0; i < points.Count; i++) {
+					Point point = points[i];
+					if (regionsData[point.Y, point.X, 0] == 255)
+						points.RemoveAt(i--);
+				}
+			}
+
+			path = new List<TP> { TP.PenUp };
+
+			Action addFirstContour = () => {
+				if (firstContours != null) {
+					foreach (Contour contour in firstContours)
+						path.AddRange(contour.ToPath());
+				}
+			};
+
+			Action addHoughLines = () => {
+				foreach (List<Point> points in lines) {
+					int numPoints = points.Count;
+					if (numPoints > 1) {
+						path.Add(new TP(points[0].X, points[0].Y));
+						for (int i = 1; i < numPoints; i++)
+							path.Add(new TP(points[i].X, points[i].Y));
+					}
+					path.Add(TP.PenUp);
+				}
+			};
+
+			Image<Bgr, byte> linesPreview = new Image<Bgr, byte>(source.Size);
+			LinesExtraction.Visualize(lines, linesPreview, 2);
+			Sketch.ShowProcessImage(linesPreview, string.Format("HoughLines x {0}", lines.Count));
 
 			Image<Bgr, byte> hatchesPreview = new Image<Bgr, byte>(regionsMap.Size);
 			Image<Bgr, byte> pathPreview = new Image<Bgr, byte>(regionsMap.Size);
-			int numThresholds = thresholds.Length;
+			int numThresholds = thresholds.Length - 2;
 			int thresholdsProcessed = 0;
 			Action callback = () => {
-				if (++thresholdsProcessed == numThresholds) {
+				thresholdsProcessed++;
+				Logger.Instance.WriteLog("Processed {0}/{1} thresholds", thresholdsProcessed, numThresholds);
+				if (thresholdsProcessed == numThresholds) {
 					Sketch.ShowProcessImage(hatchesPreview, "Hatches");
 					Sketch.ShowProcessImage(pathPreview, "Path");
 					ProcessCompleted?.Invoke();
 				}
 			};
 
-			foreach(Threshold threshold in thresholds) {
+			addHoughLines();
+			for (int i = 0; i < numThresholds; i++) {
+				Threshold threshold = thresholds[i];
 				//(new Thread(() => {
 					HatchRegion hatchRegion = new HatchRegion();
 
@@ -47,6 +94,11 @@ namespace com.tod.sketch.hatch {
 					//Segment.Visualize(hatchRegion.hatches, pathPreview, new MCvScalar(255, 100, 100), 1, false);
 
 					hatchRegion.Link(threshold, regionsMap);
+					path.AddRange(hatchRegion.path);
+					if (i == 0) {
+						addFirstContour();
+						addHoughLines();
+					}
 					TP.Visualize(hatchRegion.path, pathPreview, new MCvScalar(255, 255, 255), 1);
 
 					callback.Invoke();

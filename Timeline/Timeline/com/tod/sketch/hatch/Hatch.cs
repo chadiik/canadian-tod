@@ -38,11 +38,11 @@ namespace com.tod.sketch.hatch {
 
 		public event SketchComplete SketchCompleted;
 
-		public void Draw(Portrait portrait, Parameters parameters) {
+		public void Draw(Image<Bgr, byte> portrait, Parameters parameters) {
 
 			const int hMax = 500;
 			double scale = 1;
-			Image<Bgr, byte> sourceImage = TODFilters.ScaleToFit(portrait.source, hMax, out scale);
+			Image<Bgr, byte> sourceImage = TODFilters.ScaleToFit(portrait, hMax, out scale);
 			Sketch.ShowProcessImage(sourceImage, "source");
 
 			Image<Gray, byte> filteredSource = Preprocess(sourceImage.Clone());
@@ -52,7 +52,8 @@ namespace com.tod.sketch.hatch {
 
 			Rectangle mapRect = new Rectangle(2, 2, filteredSource.Width - 4, filteredSource.Height - 4);
 			Image<Gray, byte> regionsMap = new Image<Gray, byte>(filteredSource.Size);
-			List<Contour> allContours = new List<Contour>();
+			List<Contour> allContours = new List<Contour>(),
+				firstContours = new List<Contour>();
 			for (int i = 0; i < parameters.thresholds.Length; i++) {
 				Threshold threshold = parameters.thresholds[i];
 				Image<Gray, byte> binary = filteredSource.Clone();
@@ -60,9 +61,13 @@ namespace com.tod.sketch.hatch {
 				Sketch.ShowProcessImage(binary, i.ToString());
 				regionsMap._Max(binary);
 
-				foreach (Contour contour in contours)
-					if (contour.area > parameters.minArea && contour.IsWithin(mapRect) && !contour.ContainedIn(allContours))
+				foreach (Contour contour in contours) {
+					if (contour.area > parameters.minArea && contour.IsWithin(mapRect) && !contour.ContainedIn(allContours)) {
 						allContours.Add(contour);
+						if (i == 1)
+							firstContours.Add(contour);
+					}
+				}
 			}
 
 			Image<Gray, byte> regionsMask = new Image<Gray, byte>(filteredSource.Size);
@@ -74,18 +79,28 @@ namespace com.tod.sketch.hatch {
 			regionsMask._Erode(2);
 			regionsMask._Dilate(4);
 
-			Sketch.ShowProcessImage(regionsMask, "RegionsMask");
 
 			Sketch.ShowProcessImage(regionsMap.Clone(), "RegionsMap unmasked");
 			regionsMap._Min(regionsMask);
 			regionsMask._ThresholdBinaryInv(new Gray(127), new Gray(255));
 			regionsMap._Max(regionsMask);
+			Sketch.ShowProcessImage(regionsMask, "RegionsMask");
 			Sketch.ShowProcessImage(regionsMap, "RegionsMap");
 
 			//(new Thread(() => {
 
-				Hatcher hatcher = new Hatcher(parameters.thresholds, regionsMap, sourceImage.Clone());
-				SketchCompleted?.Invoke(new List<TP>() { new TP(1000, 1000), new TP(1000, 1000) });
+				Hatcher hatcher = new Hatcher(parameters.thresholds, regionsMap);
+
+				hatcher.ProcessCompleted += () => {
+					Logger.Instance.WriteLog("Hatch completed");
+					Image<Bgr, byte> preview = new Image<Bgr, byte>(regionsMap.Width, regionsMap.Height, new Bgr(255, 255, 255));
+					//TP.Visualize(hatcher.path, preview, new MCvScalar(0), 1);
+					SketchPreview(hatcher.path, preview, new MCvScalar(0), 1);
+
+					SketchCompleted?.Invoke(hatcher.path);
+				};
+
+				hatcher.Process(sourceImage.Clone(), firstContours);
 			//})).Start();
 		}
 
@@ -151,6 +166,33 @@ namespace com.tod.sketch.hatch {
 			CvInvoke.Rectangle(data, smaller, new MCvScalar(200, 200, 200), -1);
 
 			return data;
+		}
+
+		private static void SketchPreview(List<TP> points, Image<Bgr, byte> image, MCvScalar lineColor, int lineThickness) {
+
+			(new Thread(() => {
+				bool penDown = false;
+				TP previous = TP.Null;
+				for (int i = 0, numPoints = points.Count; i < numPoints; i++) {
+					if (points[i].IsDown) {
+						if (!penDown) {
+							penDown = true;
+						}
+						else {
+							CvInvoke.Line(image, previous.ToPoint(), points[i].ToPoint(), lineColor, lineThickness);
+						}
+						previous = points[i];
+					}
+					else {
+						penDown = false;
+						Thread.Sleep(3);
+					}
+
+					if(i % 10 == 0)
+						Thread.Sleep(1);
+					Sketch.ShowProcessImage(image, "Preview");
+				}
+			})).Start();
 		}
 	}
 }

@@ -54,7 +54,7 @@ namespace com.tod.sketch.hatch {
 			PointF directionStart = new PointF((float)Math.Cos(threshold.Angle + Math.PI), -(float)Math.Sin(threshold.Angle + Math.PI)),
 				directionEnd = new PointF((float)Math.Cos(threshold.Angle), -(float)Math.Sin(threshold.Angle));
 
-			path = new List<TP>();
+			path = new List<TP> { TP.PenUp };
 			bool first = true;
 			Segment hatch = hatches.Count > 0 ? hatches[0] : null;
 			while (hatch != null) {
@@ -83,6 +83,8 @@ namespace com.tod.sketch.hatch {
 
 				first = !first;
 			}
+
+			path.Add(TP.PenUp);
 		}
 
 		private double Dot(PointF a, PointF b) {
