@@ -65,6 +65,12 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.cannyThreshold = new System.Windows.Forms.NumericUpDown();
 			this.edges = new System.Windows.Forms.TabPage();
+			this.label20 = new System.Windows.Forms.Label();
+			this.erosion = new System.Windows.Forms.NumericUpDown();
+			this.label19 = new System.Windows.Forms.Label();
+			this.edgesThreshold = new System.Windows.Forms.NumericUpDown();
+			this.label17 = new System.Windows.Forms.Label();
+			this.sobelAperture = new System.Windows.Forms.NumericUpDown();
 			this.numEdgesLines = new System.Windows.Forms.Label();
 			this.edgesFilteredImage = new Emgu.CV.UI.ImageBox();
 			this.edgesParameters = new System.Windows.Forms.TextBox();
@@ -73,12 +79,6 @@
 			this.edgesSourceImage = new Emgu.CV.UI.ImageBox();
 			this.label18 = new System.Windows.Forms.Label();
 			this.sobelOrder = new System.Windows.Forms.NumericUpDown();
-			this.label17 = new System.Windows.Forms.Label();
-			this.sobelAperture = new System.Windows.Forms.NumericUpDown();
-			this.label19 = new System.Windows.Forms.Label();
-			this.edgesThreshold = new System.Windows.Forms.NumericUpDown();
-			this.label20 = new System.Windows.Forms.Label();
-			this.erosion = new System.Windows.Forms.NumericUpDown();
 			this.tabControl1.SuspendLayout();
 			this.hough.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightScalar)).BeginInit();
@@ -101,13 +101,13 @@
 			((System.ComponentModel.ISupportInitialize)(this.cannyThresholdLinking)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.cannyThreshold)).BeginInit();
 			this.edges.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.erosion)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesFilteredImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesResultImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesSourceImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelOrder)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.erosion)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -768,6 +768,95 @@
 			this.edges.Text = "Edges";
 			this.edges.UseVisualStyleBackColor = true;
 			// 
+			// label20
+			// 
+			this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label20.AutoSize = true;
+			this.label20.Location = new System.Drawing.Point(6, 127);
+			this.label20.Name = "label20";
+			this.label20.Size = new System.Drawing.Size(41, 13);
+			this.label20.TabIndex = 51;
+			this.label20.Text = "erosion";
+			this.label20.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// erosion
+			// 
+			this.erosion.Location = new System.Drawing.Point(153, 123);
+			this.erosion.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+			this.erosion.Name = "erosion";
+			this.erosion.Size = new System.Drawing.Size(120, 20);
+			this.erosion.TabIndex = 50;
+			this.erosion.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
+			// label19
+			// 
+			this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label19.AutoSize = true;
+			this.label19.Location = new System.Drawing.Point(6, 101);
+			this.label19.Name = "label19";
+			this.label19.Size = new System.Drawing.Size(83, 13);
+			this.label19.TabIndex = 49;
+			this.label19.Text = "edgesThreshold";
+			this.label19.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// edgesThreshold
+			// 
+			this.edgesThreshold.Location = new System.Drawing.Point(153, 97);
+			this.edgesThreshold.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+			this.edgesThreshold.Name = "edgesThreshold";
+			this.edgesThreshold.Size = new System.Drawing.Size(120, 20);
+			this.edgesThreshold.TabIndex = 48;
+			this.edgesThreshold.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
+			// label17
+			// 
+			this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label17.AutoSize = true;
+			this.label17.Location = new System.Drawing.Point(6, 75);
+			this.label17.Name = "label17";
+			this.label17.Size = new System.Drawing.Size(72, 13);
+			this.label17.TabIndex = 47;
+			this.label17.Text = "sobelAperture";
+			this.label17.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// sobelAperture
+			// 
+			this.sobelAperture.Increment = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+			this.sobelAperture.Location = new System.Drawing.Point(153, 71);
+			this.sobelAperture.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+			this.sobelAperture.Name = "sobelAperture";
+			this.sobelAperture.Size = new System.Drawing.Size(120, 20);
+			this.sobelAperture.TabIndex = 46;
+			this.sobelAperture.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
 			// numEdgesLines
 			// 
 			this.numEdgesLines.AutoSize = true;
@@ -849,95 +938,6 @@
 			this.sobelOrder.Size = new System.Drawing.Size(120, 20);
 			this.sobelOrder.TabIndex = 38;
 			// 
-			// label17
-			// 
-			this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label17.AutoSize = true;
-			this.label17.Location = new System.Drawing.Point(6, 75);
-			this.label17.Name = "label17";
-			this.label17.Size = new System.Drawing.Size(72, 13);
-			this.label17.TabIndex = 47;
-			this.label17.Text = "sobelAperture";
-			this.label17.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// sobelAperture
-			// 
-			this.sobelAperture.Increment = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-			this.sobelAperture.Location = new System.Drawing.Point(153, 71);
-			this.sobelAperture.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-			this.sobelAperture.Name = "sobelAperture";
-			this.sobelAperture.Size = new System.Drawing.Size(120, 20);
-			this.sobelAperture.TabIndex = 46;
-			this.sobelAperture.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// label19
-			// 
-			this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label19.AutoSize = true;
-			this.label19.Location = new System.Drawing.Point(6, 101);
-			this.label19.Name = "label19";
-			this.label19.Size = new System.Drawing.Size(83, 13);
-			this.label19.TabIndex = 49;
-			this.label19.Text = "edgesThreshold";
-			this.label19.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// edgesThreshold
-			// 
-			this.edgesThreshold.Location = new System.Drawing.Point(153, 97);
-			this.edgesThreshold.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-			this.edgesThreshold.Name = "edgesThreshold";
-			this.edgesThreshold.Size = new System.Drawing.Size(120, 20);
-			this.edgesThreshold.TabIndex = 48;
-			this.edgesThreshold.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// label20
-			// 
-			this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label20.AutoSize = true;
-			this.label20.Location = new System.Drawing.Point(6, 127);
-			this.label20.Name = "label20";
-			this.label20.Size = new System.Drawing.Size(41, 13);
-			this.label20.TabIndex = 51;
-			this.label20.Text = "erosion";
-			this.label20.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// erosion
-			// 
-			this.erosion.Location = new System.Drawing.Point(153, 123);
-			this.erosion.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-			this.erosion.Name = "erosion";
-			this.erosion.Size = new System.Drawing.Size(120, 20);
-			this.erosion.TabIndex = 50;
-			this.erosion.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -970,13 +970,13 @@
 			((System.ComponentModel.ISupportInitialize)(this.cannyThreshold)).EndInit();
 			this.edges.ResumeLayout(false);
 			this.edges.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.erosion)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesFilteredImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesResultImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesSourceImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelOrder)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.erosion)).EndInit();
 			this.ResumeLayout(false);
 
 		}
