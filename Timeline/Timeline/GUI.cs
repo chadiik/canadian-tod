@@ -12,7 +12,7 @@ using Emgu.CV.Structure;
 
 namespace Timeline {
 
-	class GUI : TODGUI {
+	public class GUI : TODGUI {
 
 		public ManagedTextBox log;
 		public ManagedTextBox streamLog;
@@ -72,7 +72,7 @@ namespace Timeline {
 		}
 	}
 
-	class ManagedTextBox : TextBox {
+	public class ManagedTextBox : TextBox {
 
 		private delegate void AppendTextCallback(TextBox box, string text);
 
@@ -98,7 +98,7 @@ namespace Timeline {
 		}
 	}
 
-	class Image : IGUIImage {
+	public class Image : IGUIImage {
 
 		private delegate void SetSourceCallback(ImageBox container, IImage mat);
 
@@ -109,6 +109,7 @@ namespace Timeline {
 		}
 
 		public IImage Source {
+			get { return container.Image; }
 			set {
 				try {
 					if (container.InvokeRequired) 
@@ -141,7 +142,7 @@ namespace Timeline {
 		}
 	}
 
-	class ImageGallery {
+	public class ImageGallery {
 
 		private delegate void AddImageCallback(FlowLayoutPanel panel, Item item);
 
