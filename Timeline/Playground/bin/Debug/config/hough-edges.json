@@ -1,0 +1,1 @@
+{"cannyThreshold":32.0,"cannyThresholdLinking":128.0,"rhoResolution":0.5,"thetaResolution":0.017453292519943295,"minLineWidth":8.0,"gapBetweenLines":2.0,"threshold":6,"blurSize":2,"spatialRadius":4.0,"colorRadius":30.0,"maxLevel":2,"termIterations":4,"termEpsilon":0.1,"addWeightAlpha":1.5,"addWeightBeta":-0.5,"addWeightScalar":0.0}
