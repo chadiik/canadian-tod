@@ -110,13 +110,13 @@ namespace com.tod.sketch.hatch {
 
 			// Clahe
 			const double clipLimit = 4.0;
-			Size tileGridSize = new Size(5, 5);
+			Size tileGridSize = new Size(4, 4);
 
 			Image<Gray, byte> grayFrame = sourceImage.Convert<Gray, byte>();
 			grayFrame._EqualizeHist();
 			Sketch.ShowProcessImage(grayFrame, "Equalized Histogram");
 
-			grayFrame = grayFrame.SmoothBlur(4, 4);
+			grayFrame = grayFrame.SmoothBlur(2, 2);
 
 			CvInvoke.CLAHE(grayFrame, clipLimit, tileGridSize, grayFrame);
 			Image<Gray, byte> filtered = grayFrame;
