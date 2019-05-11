@@ -47,26 +47,6 @@ namespace Timeline {
 			return cm;
 		}
 
-        private void Debug() {
-
-			List<TP> path = new List<TP>() {
-				new TP(-1, -1),
-				new TP(.5f, .5f),
-				new TP(1f, .5f),
-				new TP(-1, -1),
-				new TP(.5f, 1f),
-				new TP(-1, -1)
-			};
-
-			Canvas canvas = Config.canvas;
-			List<TP> sizedPath = canvas.ToCell(path);
-
-			IK ik = new IK();
-			ik.Convert(sizedPath, (int xsteps, int ssteps, int esteps, int wrist) => {
-				Logger.Instance.SilentLog("Debug: x[{0}] s[{1}] e[{2}] wrist[{3}]", xsteps, ssteps, esteps, wrist);
-			});
-		}
-
 		private void Start() {
 
 			m_GUI = new GUI() {
@@ -79,7 +59,11 @@ namespace Timeline {
 				processGallery = new ImageGallery(processGallery, new Image(galleryItemTemplate))
 			};
 
-			m_Scenario = new Scenario(Config.canvas);
+			Wall.Parameters wp;
+			if (!JSON.Load("wall", out wp))
+				wp = new Wall.Parameters();
+
+			m_Scenario = new Scenario(new Wall(wp));
 			m_Scenario.vision.SourceUpdated += (Mat image) => m_GUI.sourceImage.Source = image;
 			m_Scenario.vision.FaceDetected += (Mat image) => m_GUI.faceRecognition.Source = image;
 			//m_Scenario.vision.CandidateFound += (Portrait portrait) => m_GUI.debugPreview.Source = portrait.source.Mat.ToImage<Bgr, byte>();
