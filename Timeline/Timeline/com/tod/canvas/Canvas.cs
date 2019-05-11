@@ -11,7 +11,15 @@ namespace com.tod.canvas {
 
 		public int x, y, width, height;
 
-		public Canvas(int x, int y, int width, int height) { // mm
+		public Canvas() {
+
+		}
+
+		public Canvas(int x, int y, int width, int height) {
+			Set(x, y, width, height);
+		}
+
+		public void Set(int x, int y, int width, int height) {
 			this.x = x;
 			this.y = y;
 			this.width = width;

@@ -84,7 +84,6 @@ namespace com.tod {
 		public static int fps = 30;
 		public static Files files = new Files();
 		public static Time time = new Time();
-		public static Canvas canvas = new Canvas(1000, 1000, 300, 500); // mm
         public static bool sprayLine = false;
         public static bool stream = false;
 		public static Version version = Version.Legacy;

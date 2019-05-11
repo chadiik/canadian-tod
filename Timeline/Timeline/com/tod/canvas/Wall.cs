@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -7,13 +9,17 @@ using System.Threading.Tasks;
 
 namespace com.tod.canvas {
 
-	class Wall : Canvas {
+	public class Wall : Canvas {
 
-		// xRatio = 0.7272
+		public class Parameters {
+			public int width = 2000, height = 1000, cells = 3;
+		}
+
+		public static RectangleF PORTRAIT = new RectangleF(0, 0, 363, 500);
+
+		// xRatio = 0.726
 		private List<Point> _cellsCoordinates;
 		private List<RectangleF> _cells;
-
-		public List<RectangleF> wallCells;
 
 		public List<RectangleF> UnitCells {
 			get {
@@ -21,7 +27,29 @@ namespace com.tod.canvas {
 			}
 		}
 
-		public Wall(int x, int y, int width, int height, int columns, int rows) : base(x, y, width, height) {
+		public Wall(Parameters parameters) {
+			Set(0, 0, parameters.width, parameters.height);
+			Setup(parameters.cells);
+		}
+
+		private void Setup(int cells) {
+
+			float scale = 0;
+			int columns = 1000, rows = 1000;
+
+
+			Action<float> test = offset => {
+				scale += offset;
+				columns = (int)(width / (PORTRAIT.Width * scale));
+				rows = (int)(height / (PORTRAIT.Height * scale));
+			};
+
+			while (columns * rows >= cells) {
+				test(.05f);
+			}
+			test(-.05f);
+
+			Console.WriteLine("columns={0}, rows={1}, scale={2}", columns, rows, scale.ToString(".00"));
 
 			Setup(columns, rows);
 		}
@@ -52,32 +80,78 @@ namespace com.tod.canvas {
 			}
 			#endregion
 
-			int offsetX = columns / 2 - 1;
-			int offsetY = rows / 2 - 0;
-			float wf = (float)columns;
+			int offsetX = (int)(columns / 2.0) - 0;
+			int offsetY = (int)(rows / 2.0) - 0;
+			float wf = columns;
 			float hf = (float)rows + (1 - rows % 2);
 			float cw = 1f / wf;
 			float ch = 1f / hf;
 
 			int numCells = _cellsCoordinates.Count;
 			_cells = new List<RectangleF>(numCells);
-
+			RectangleF canvas = new RectangleF(-.01f, -.01f, 1.02f, 1.02f);
 			for (int i = 0; i < numCells; i++) {
 
-				float xf = (float)(_cellsCoordinates[i].X + offsetX);
-				float yf = (float)(_cellsCoordinates[i].Y + offsetY);
+				float xf = _cellsCoordinates[i].X + offsetX;
+				float yf = _cellsCoordinates[i].Y + offsetY;
 
-				float zigzagX = cw * .5f * (float)(_cellsCoordinates[i].Y % 2);
-				_cells.Add(new RectangleF(
-					xf / wf + zigzagX, yf / hf, cw, ch
-					));
+				float zigzagX = cw * .5f * (_cellsCoordinates[i].Y % 2);
+				RectangleF rect = new RectangleF(xf / wf + zigzagX, yf / hf, cw, ch);
+				if (canvas.Contains(rect))
+					_cells.Add(rect);
 			}
+		}
+
+		public Image<Bgr, byte> Visualize() {
+
+			Image<Bgr, byte> image = new Image<Bgr, byte>(1200, 800);
+
+			double sx = (double)(image.Size.Width - 200) / width;
+			double sy = (double)(image.Size.Height - 200) / height;
+			double scale = scale = Math.Min(sx, sy);
+
+			int w = (int)(width * scale), 
+				h = (int)(height * scale);
+			int x = (image.Size.Width - w) / 2,
+				y = (image.Size.Height - h) / 2;
+			CvInvoke.Rectangle(image, new Rectangle(x, y, w, h), new MCvScalar(255, 255, 255), -1);
+
+			Random rand = new Random(_cells.Count);
+			MCvScalar black = new MCvScalar(0);
+			for(int i = 0; i < _cells.Count; i++) {
+				MCvScalar color = new MCvScalar(64 + 192 * rand.NextDouble(), 64 + 192 * rand.NextDouble(), 64 + 192 * rand.NextDouble());
+
+				RectangleF r = _cells[i];
+				r.X = (float)Math.Floor(r.X * width);
+				r.Y = (float)Math.Floor(r.Y * height);
+				r.Width = (float)Math.Floor(r.Width * width);
+				r.Height = (float)Math.Floor(r.Height * height);
+
+				Console.WriteLine("rect {0}: {1}", i, r);
+
+				Rectangle rect = ToIntRect(r, scale);
+				rect.X += x;
+				rect.Y += y;
+
+				CvInvoke.Rectangle(image, rect, color, -1);
+				CvInvoke.PutText(image, (i + 1).ToString(), new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2), Emgu.CV.CvEnum.FontFace.HersheyPlain, 2, black, 2);
+			}
+
+			return image;
 		}
 
 		public void Test(int index) {
 			Point cellCoord = _cellsCoordinates[index];
 			Logger.Instance.WriteLog("{0}\t=> {1}, {2}", index.ToString(), cellCoord.X.ToString(), cellCoord.Y.ToString());
 			Logger.Instance.WriteLog("\t=> {0}", _cells[index].ToString());
+		}
+
+		public static Rectangle ToIntRect(RectangleF rect) {
+			return new Rectangle((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+		}
+
+		public static Rectangle ToIntRect(RectangleF rect, double scale) {
+			return new Rectangle((int)(rect.X * scale), (int)(rect.Y * scale), (int)(rect.Width * scale), (int)(rect.Height * scale));
 		}
 
 		private static Point CellCoordinates(int tileNum) {
