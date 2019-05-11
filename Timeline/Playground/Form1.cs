@@ -1,4 +1,5 @@
 ﻿using com.tod;
+using com.tod.canvas;
 using com.tod.sketch;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -17,13 +18,49 @@ namespace Playground {
 
 		public LinesExtraction.HoughParameters hp;
 		public LinesExtraction.EdgesParameters ep;
+		public Wall.Parameters wp;
 
 		public Form1() {
 			InitializeComponent();
 
 			HoughSetup();
 			EdgesSetup();
+			WallSetup();
+
+			tabControl1.SelectTab(wallTab);
 		}
+
+		#region wall
+		private void WallSetup() {
+
+			if (!JSON.Load("wall", out wp))
+				wp = new Wall.Parameters();
+
+			saveWallButton.Click += (object sender, EventArgs e) => {
+				JSON.Save(wp, wallFilename.Text);
+			};
+
+			wallWidth.Value = wp.width;
+			wallHeight.Value = wp.height;
+			numCells.Value = wp.cells;
+
+			wallWidth.ValueChanged += OnWallParameterChanged;
+			wallHeight.ValueChanged += OnWallParameterChanged;
+			numCells.ValueChanged += OnWallParameterChanged;
+
+			OnWallParameterChanged(null, null);
+		}
+
+		private void OnWallParameterChanged(object sender, EventArgs e) {
+
+			wp.width = (int)wallWidth.Value;
+			wp.height = (int)wallHeight.Value;
+			wp.cells = (int)numCells.Value;
+
+			Wall wall = new Wall(wp);
+			wallPreviewImage.Image = wall.Visualize();
+		}
+		#endregion
 
 		#region edges
 		private void EdgesSetup() {

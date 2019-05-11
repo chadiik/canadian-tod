@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
-			this.hough = new System.Windows.Forms.TabPage();
+			this.houghTab = new System.Windows.Forms.TabPage();
 			this.numLines = new System.Windows.Forms.Label();
 			this.label16 = new System.Windows.Forms.Label();
 			this.addWeightScalar = new System.Windows.Forms.NumericUpDown();
@@ -64,7 +64,7 @@
 			this.cannyThresholdLinking = new System.Windows.Forms.NumericUpDown();
 			this.label1 = new System.Windows.Forms.Label();
 			this.cannyThreshold = new System.Windows.Forms.NumericUpDown();
-			this.edges = new System.Windows.Forms.TabPage();
+			this.edgesTab = new System.Windows.Forms.TabPage();
 			this.label20 = new System.Windows.Forms.Label();
 			this.erosion = new System.Windows.Forms.NumericUpDown();
 			this.label19 = new System.Windows.Forms.Label();
@@ -79,8 +79,18 @@
 			this.edgesSourceImage = new Emgu.CV.UI.ImageBox();
 			this.label18 = new System.Windows.Forms.Label();
 			this.sobelOrder = new System.Windows.Forms.NumericUpDown();
+			this.wallTab = new System.Windows.Forms.TabPage();
+			this.wallPreviewImage = new Emgu.CV.UI.ImageBox();
+			this.wallFilename = new System.Windows.Forms.TextBox();
+			this.saveWallButton = new System.Windows.Forms.Button();
+			this.label21 = new System.Windows.Forms.Label();
+			this.wallWidth = new System.Windows.Forms.NumericUpDown();
+			this.label22 = new System.Windows.Forms.Label();
+			this.wallHeight = new System.Windows.Forms.NumericUpDown();
+			this.label23 = new System.Windows.Forms.Label();
+			this.numCells = new System.Windows.Forms.NumericUpDown();
 			this.tabControl1.SuspendLayout();
-			this.hough.SuspendLayout();
+			this.houghTab.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightScalar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightBeta)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightAlpha)).BeginInit();
@@ -100,7 +110,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.rhoResolution)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.cannyThresholdLinking)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.cannyThreshold)).BeginInit();
-			this.edges.SuspendLayout();
+			this.edgesTab.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.erosion)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).BeginInit();
@@ -108,65 +118,71 @@
 			((System.ComponentModel.ISupportInitialize)(this.edgesResultImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesSourceImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelOrder)).BeginInit();
+			this.wallTab.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.wallPreviewImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.wallWidth)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.wallHeight)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numCells)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// tabControl1
 			// 
-			this.tabControl1.Controls.Add(this.hough);
-			this.tabControl1.Controls.Add(this.edges);
+			this.tabControl1.Controls.Add(this.houghTab);
+			this.tabControl1.Controls.Add(this.edgesTab);
+			this.tabControl1.Controls.Add(this.wallTab);
 			this.tabControl1.Location = new System.Drawing.Point(12, 12);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
 			this.tabControl1.Size = new System.Drawing.Size(1023, 627);
 			this.tabControl1.TabIndex = 0;
 			// 
-			// hough
+			// houghTab
 			// 
-			this.hough.Controls.Add(this.numLines);
-			this.hough.Controls.Add(this.label16);
-			this.hough.Controls.Add(this.addWeightScalar);
-			this.hough.Controls.Add(this.label15);
-			this.hough.Controls.Add(this.addWeightBeta);
-			this.hough.Controls.Add(this.label14);
-			this.hough.Controls.Add(this.addWeightAlpha);
-			this.hough.Controls.Add(this.filteredImage);
-			this.hough.Controls.Add(this.label13);
-			this.hough.Controls.Add(this.termEpsilon);
-			this.hough.Controls.Add(this.label12);
-			this.hough.Controls.Add(this.termIterations);
-			this.hough.Controls.Add(this.label11);
-			this.hough.Controls.Add(this.maxLevel);
-			this.hough.Controls.Add(this.label10);
-			this.hough.Controls.Add(this.colorRadius);
-			this.hough.Controls.Add(this.label9);
-			this.hough.Controls.Add(this.spatialRadius);
-			this.hough.Controls.Add(this.label8);
-			this.hough.Controls.Add(this.blurSize);
-			this.hough.Controls.Add(this.houghParameters);
-			this.hough.Controls.Add(this.saveButton);
-			this.hough.Controls.Add(this.resultImage);
-			this.hough.Controls.Add(this.sourceImage);
-			this.hough.Controls.Add(this.label7);
-			this.hough.Controls.Add(this.threshold);
-			this.hough.Controls.Add(this.label6);
-			this.hough.Controls.Add(this.gapBetweenLines);
-			this.hough.Controls.Add(this.label5);
-			this.hough.Controls.Add(this.minLineWidth);
-			this.hough.Controls.Add(this.label4);
-			this.hough.Controls.Add(this.thetaResolution);
-			this.hough.Controls.Add(this.label3);
-			this.hough.Controls.Add(this.rhoResolution);
-			this.hough.Controls.Add(this.label2);
-			this.hough.Controls.Add(this.cannyThresholdLinking);
-			this.hough.Controls.Add(this.label1);
-			this.hough.Controls.Add(this.cannyThreshold);
-			this.hough.Location = new System.Drawing.Point(4, 22);
-			this.hough.Name = "hough";
-			this.hough.Padding = new System.Windows.Forms.Padding(3);
-			this.hough.Size = new System.Drawing.Size(1015, 601);
-			this.hough.TabIndex = 0;
-			this.hough.Text = "HoughLines";
-			this.hough.UseVisualStyleBackColor = true;
+			this.houghTab.Controls.Add(this.numLines);
+			this.houghTab.Controls.Add(this.label16);
+			this.houghTab.Controls.Add(this.addWeightScalar);
+			this.houghTab.Controls.Add(this.label15);
+			this.houghTab.Controls.Add(this.addWeightBeta);
+			this.houghTab.Controls.Add(this.label14);
+			this.houghTab.Controls.Add(this.addWeightAlpha);
+			this.houghTab.Controls.Add(this.filteredImage);
+			this.houghTab.Controls.Add(this.label13);
+			this.houghTab.Controls.Add(this.termEpsilon);
+			this.houghTab.Controls.Add(this.label12);
+			this.houghTab.Controls.Add(this.termIterations);
+			this.houghTab.Controls.Add(this.label11);
+			this.houghTab.Controls.Add(this.maxLevel);
+			this.houghTab.Controls.Add(this.label10);
+			this.houghTab.Controls.Add(this.colorRadius);
+			this.houghTab.Controls.Add(this.label9);
+			this.houghTab.Controls.Add(this.spatialRadius);
+			this.houghTab.Controls.Add(this.label8);
+			this.houghTab.Controls.Add(this.blurSize);
+			this.houghTab.Controls.Add(this.houghParameters);
+			this.houghTab.Controls.Add(this.saveButton);
+			this.houghTab.Controls.Add(this.resultImage);
+			this.houghTab.Controls.Add(this.sourceImage);
+			this.houghTab.Controls.Add(this.label7);
+			this.houghTab.Controls.Add(this.threshold);
+			this.houghTab.Controls.Add(this.label6);
+			this.houghTab.Controls.Add(this.gapBetweenLines);
+			this.houghTab.Controls.Add(this.label5);
+			this.houghTab.Controls.Add(this.minLineWidth);
+			this.houghTab.Controls.Add(this.label4);
+			this.houghTab.Controls.Add(this.thetaResolution);
+			this.houghTab.Controls.Add(this.label3);
+			this.houghTab.Controls.Add(this.rhoResolution);
+			this.houghTab.Controls.Add(this.label2);
+			this.houghTab.Controls.Add(this.cannyThresholdLinking);
+			this.houghTab.Controls.Add(this.label1);
+			this.houghTab.Controls.Add(this.cannyThreshold);
+			this.houghTab.Location = new System.Drawing.Point(4, 22);
+			this.houghTab.Name = "houghTab";
+			this.houghTab.Padding = new System.Windows.Forms.Padding(3);
+			this.houghTab.Size = new System.Drawing.Size(1015, 601);
+			this.houghTab.TabIndex = 0;
+			this.houghTab.Text = "HoughLines";
+			this.houghTab.UseVisualStyleBackColor = true;
 			// 
 			// numLines
 			// 
@@ -744,29 +760,29 @@
 			this.cannyThreshold.Size = new System.Drawing.Size(120, 20);
 			this.cannyThreshold.TabIndex = 0;
 			// 
-			// edges
+			// edgesTab
 			// 
-			this.edges.Controls.Add(this.label20);
-			this.edges.Controls.Add(this.erosion);
-			this.edges.Controls.Add(this.label19);
-			this.edges.Controls.Add(this.edgesThreshold);
-			this.edges.Controls.Add(this.label17);
-			this.edges.Controls.Add(this.sobelAperture);
-			this.edges.Controls.Add(this.numEdgesLines);
-			this.edges.Controls.Add(this.edgesFilteredImage);
-			this.edges.Controls.Add(this.edgesParameters);
-			this.edges.Controls.Add(this.saveEdgesButton);
-			this.edges.Controls.Add(this.edgesResultImage);
-			this.edges.Controls.Add(this.edgesSourceImage);
-			this.edges.Controls.Add(this.label18);
-			this.edges.Controls.Add(this.sobelOrder);
-			this.edges.Location = new System.Drawing.Point(4, 22);
-			this.edges.Name = "edges";
-			this.edges.Padding = new System.Windows.Forms.Padding(3);
-			this.edges.Size = new System.Drawing.Size(1015, 601);
-			this.edges.TabIndex = 1;
-			this.edges.Text = "Edges";
-			this.edges.UseVisualStyleBackColor = true;
+			this.edgesTab.Controls.Add(this.label20);
+			this.edgesTab.Controls.Add(this.erosion);
+			this.edgesTab.Controls.Add(this.label19);
+			this.edgesTab.Controls.Add(this.edgesThreshold);
+			this.edgesTab.Controls.Add(this.label17);
+			this.edgesTab.Controls.Add(this.sobelAperture);
+			this.edgesTab.Controls.Add(this.numEdgesLines);
+			this.edgesTab.Controls.Add(this.edgesFilteredImage);
+			this.edgesTab.Controls.Add(this.edgesParameters);
+			this.edgesTab.Controls.Add(this.saveEdgesButton);
+			this.edgesTab.Controls.Add(this.edgesResultImage);
+			this.edgesTab.Controls.Add(this.edgesSourceImage);
+			this.edgesTab.Controls.Add(this.label18);
+			this.edgesTab.Controls.Add(this.sobelOrder);
+			this.edgesTab.Location = new System.Drawing.Point(4, 22);
+			this.edgesTab.Name = "edgesTab";
+			this.edgesTab.Padding = new System.Windows.Forms.Padding(3);
+			this.edgesTab.Size = new System.Drawing.Size(1015, 601);
+			this.edgesTab.TabIndex = 1;
+			this.edgesTab.Text = "Edges";
+			this.edgesTab.UseVisualStyleBackColor = true;
 			// 
 			// label20
 			// 
@@ -938,6 +954,138 @@
 			this.sobelOrder.Size = new System.Drawing.Size(120, 20);
 			this.sobelOrder.TabIndex = 38;
 			// 
+			// wallTab
+			// 
+			this.wallTab.Controls.Add(this.label23);
+			this.wallTab.Controls.Add(this.numCells);
+			this.wallTab.Controls.Add(this.label22);
+			this.wallTab.Controls.Add(this.wallHeight);
+			this.wallTab.Controls.Add(this.wallFilename);
+			this.wallTab.Controls.Add(this.saveWallButton);
+			this.wallTab.Controls.Add(this.label21);
+			this.wallTab.Controls.Add(this.wallWidth);
+			this.wallTab.Controls.Add(this.wallPreviewImage);
+			this.wallTab.Location = new System.Drawing.Point(4, 22);
+			this.wallTab.Name = "wallTab";
+			this.wallTab.Padding = new System.Windows.Forms.Padding(3);
+			this.wallTab.Size = new System.Drawing.Size(1015, 601);
+			this.wallTab.TabIndex = 2;
+			this.wallTab.Text = "Wall";
+			this.wallTab.UseVisualStyleBackColor = true;
+			// 
+			// wallPreviewImage
+			// 
+			this.wallPreviewImage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+			this.wallPreviewImage.InitialImage = null;
+			this.wallPreviewImage.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
+			this.wallPreviewImage.Location = new System.Drawing.Point(316, 6);
+			this.wallPreviewImage.Name = "wallPreviewImage";
+			this.wallPreviewImage.Size = new System.Drawing.Size(693, 589);
+			this.wallPreviewImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.wallPreviewImage.TabIndex = 41;
+			this.wallPreviewImage.TabStop = false;
+			// 
+			// wallFilename
+			// 
+			this.wallFilename.Location = new System.Drawing.Point(150, 8);
+			this.wallFilename.Name = "wallFilename";
+			this.wallFilename.Size = new System.Drawing.Size(120, 20);
+			this.wallFilename.TabIndex = 47;
+			this.wallFilename.Text = "wall";
+			// 
+			// saveWallButton
+			// 
+			this.saveWallButton.Location = new System.Drawing.Point(6, 6);
+			this.saveWallButton.Name = "saveWallButton";
+			this.saveWallButton.Size = new System.Drawing.Size(75, 23);
+			this.saveWallButton.TabIndex = 46;
+			this.saveWallButton.Text = "SAVE";
+			this.saveWallButton.UseVisualStyleBackColor = true;
+			// 
+			// label21
+			// 
+			this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label21.AutoSize = true;
+			this.label21.Location = new System.Drawing.Point(3, 49);
+			this.label21.Name = "label21";
+			this.label21.Size = new System.Drawing.Size(60, 13);
+			this.label21.TabIndex = 45;
+			this.label21.Text = "Width (mm)";
+			this.label21.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// wallWidth
+			// 
+			this.wallWidth.Location = new System.Drawing.Point(150, 45);
+			this.wallWidth.Maximum = new decimal(new int[] {
+            20000,
+            0,
+            0,
+            0});
+			this.wallWidth.Name = "wallWidth";
+			this.wallWidth.Size = new System.Drawing.Size(120, 20);
+			this.wallWidth.TabIndex = 44;
+			this.wallWidth.Value = new decimal(new int[] {
+            1600,
+            0,
+            0,
+            0});
+			// 
+			// label22
+			// 
+			this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label22.AutoSize = true;
+			this.label22.Location = new System.Drawing.Point(3, 75);
+			this.label22.Name = "label22";
+			this.label22.Size = new System.Drawing.Size(63, 13);
+			this.label22.TabIndex = 49;
+			this.label22.Text = "Height (mm)";
+			this.label22.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// wallHeight
+			// 
+			this.wallHeight.Location = new System.Drawing.Point(150, 71);
+			this.wallHeight.Maximum = new decimal(new int[] {
+            20000,
+            0,
+            0,
+            0});
+			this.wallHeight.Name = "wallHeight";
+			this.wallHeight.Size = new System.Drawing.Size(120, 20);
+			this.wallHeight.TabIndex = 48;
+			this.wallHeight.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+			// 
+			// label23
+			// 
+			this.label23.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label23.AutoSize = true;
+			this.label23.Location = new System.Drawing.Point(3, 101);
+			this.label23.Name = "label23";
+			this.label23.Size = new System.Drawing.Size(29, 13);
+			this.label23.TabIndex = 51;
+			this.label23.Text = "Cells";
+			this.label23.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// numCells
+			// 
+			this.numCells.Location = new System.Drawing.Point(150, 97);
+			this.numCells.Maximum = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+			this.numCells.Name = "numCells";
+			this.numCells.Size = new System.Drawing.Size(120, 20);
+			this.numCells.TabIndex = 50;
+			this.numCells.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -947,8 +1095,8 @@
 			this.Name = "Form1";
 			this.Text = "Form1";
 			this.tabControl1.ResumeLayout(false);
-			this.hough.ResumeLayout(false);
-			this.hough.PerformLayout();
+			this.houghTab.ResumeLayout(false);
+			this.houghTab.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightScalar)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightBeta)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.addWeightAlpha)).EndInit();
@@ -968,8 +1116,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.rhoResolution)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.cannyThresholdLinking)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.cannyThreshold)).EndInit();
-			this.edges.ResumeLayout(false);
-			this.edges.PerformLayout();
+			this.edgesTab.ResumeLayout(false);
+			this.edgesTab.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.erosion)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesThreshold)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelAperture)).EndInit();
@@ -977,6 +1125,12 @@
 			((System.ComponentModel.ISupportInitialize)(this.edgesResultImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.edgesSourceImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.sobelOrder)).EndInit();
+			this.wallTab.ResumeLayout(false);
+			this.wallTab.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.wallPreviewImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.wallWidth)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.wallHeight)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numCells)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -984,8 +1138,8 @@
 		#endregion
 
 		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage hough;
-		private System.Windows.Forms.TabPage edges;
+		private System.Windows.Forms.TabPage houghTab;
+		private System.Windows.Forms.TabPage edgesTab;
 		private System.Windows.Forms.NumericUpDown cannyThreshold;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.NumericUpDown cannyThresholdLinking;
@@ -1038,6 +1192,16 @@
 		private System.Windows.Forms.NumericUpDown edgesThreshold;
 		private System.Windows.Forms.Label label20;
 		private System.Windows.Forms.NumericUpDown erosion;
+		private System.Windows.Forms.TabPage wallTab;
+		private System.Windows.Forms.Label label22;
+		private System.Windows.Forms.NumericUpDown wallHeight;
+		private System.Windows.Forms.TextBox wallFilename;
+		private System.Windows.Forms.Button saveWallButton;
+		private System.Windows.Forms.Label label21;
+		private System.Windows.Forms.NumericUpDown wallWidth;
+		private Emgu.CV.UI.ImageBox wallPreviewImage;
+		private System.Windows.Forms.Label label23;
+		private System.Windows.Forms.NumericUpDown numCells;
 	}
 }
 
