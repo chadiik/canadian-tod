@@ -83,7 +83,7 @@ namespace com.tod.sketch.hatch {
 				}
 			};
 
-			addHoughLines();
+			//addHoughLines();
 			for (int i = 0; i < numThresholds; i++) {
 				Threshold threshold = thresholds[i];
 				//(new Thread(() => {
@@ -97,7 +97,7 @@ namespace com.tod.sketch.hatch {
 					path.AddRange(hatchRegion.path);
 					if (i == 0) {
 						addFirstContour();
-						addHoughLines();
+						//addHoughLines();
 					}
 					TP.Visualize(hatchRegion.path, pathPreview, new MCvScalar(255, 255, 255), 1);
 

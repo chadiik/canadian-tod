@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using com.tod.sketch;
 
 namespace com.tod.canvas {
 
@@ -102,12 +103,67 @@ namespace com.tod.canvas {
 			}
 		}
 
-		public Image<Bgr, byte> Visualize() {
+        public override List<TP> ToCell(List<TP> path, int cell) {
+
+            cell = Math.Min(_cells.Count - 1, Math.Max(0, cell));
+
+            List<TP> result = new List<TP>();
+            RectangleF r = _cells[cell];
+            float rx = r.X = (float)Math.Floor(r.X * width);
+            float ry = r.Y = (float)Math.Floor(r.Y * height);
+            float rw = r.Width = (float)Math.Floor(r.Width * width);
+            float rh = r.Height = (float)Math.Floor(r.Height * height);
+
+            double pathLength = 0;
+            int penUps = 0;
+            int coordinates = 0;
+            bool wasDown = false;
+            TP np = new TP(0, 0);
+            for (int i = 0; i < path.Count; i++) {
+                TP p = path[i];
+                if (p.IsDown && !p.IsNull) {
+                    float x = rx + p.x * rw,
+                        y = ry + p.y * rh;
+                    if (r.Contains(x, y)) {
+                        double d = Math.Sqrt((np.x - x) * (np.x - x) + (np.y - y) * (np.y - y));
+                        if (d > 4) {
+                            pathLength += d;
+                            coordinates++;
+
+                            np = new TP(x, y);
+                            result.Add(np);
+                            wasDown = true;
+                        }
+                    }
+                    else {
+                        if (result[result.Count - 1].IsDown) {
+                            result.Add(TP.PenUp);
+                            penUps++;
+                        }
+                        wasDown = false;
+                    }
+                }
+                else if (wasDown) {
+                    if (result[result.Count - 1].IsDown) {
+                        result.Add(TP.PenUp);
+                        penUps++;
+                    }
+                    wasDown = false;
+                }
+            }
+
+            Logger.Instance.WriteLog("Had Path length = {0} mm", Math.Floor(pathLength));
+            Logger.Instance.WriteLog("Had Coordinates = {0}x", coordinates);
+            Logger.Instance.WriteLog("Had Pen ups = {0}x", penUps);
+
+            return result;
+        }
+        public Image<Bgr, byte> Visualize(bool label = true) {
 
 			Image<Bgr, byte> image = new Image<Bgr, byte>(1200, 800);
 
-			double sx = (double)(image.Size.Width - 200) / width;
-			double sy = (double)(image.Size.Height - 200) / height;
+			double sx = (double)(image.Size.Width - 40) / width;
+			double sy = (double)(image.Size.Height - 40) / height;
 			double scale = scale = Math.Min(sx, sy);
 
 			int w = (int)(width * scale), 
@@ -134,13 +190,35 @@ namespace com.tod.canvas {
 				rect.Y += y;
 
 				CvInvoke.Rectangle(image, rect, color, -1);
-				CvInvoke.PutText(image, (i + 1).ToString(), new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2), Emgu.CV.CvEnum.FontFace.HersheyPlain, 2, black, 2);
+                if (label)
+                    CvInvoke.PutText(image, (i + 1).ToString(), new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2), Emgu.CV.CvEnum.FontFace.HersheyPlain, 2, black, 2);
 			}
 
 			return image;
 		}
 
-		public void Test(int index) {
+        public List<TP> Fit(int imageWidth, int imageHeight, List<TP> path) {
+
+            double sx = (double)(imageWidth - 40) / width;
+            double sy = (double)(imageHeight - 40) / height;
+            float scale = (float)Math.Min(sx, sy);
+
+            int w = (int)(width * scale),
+                h = (int)(height * scale);
+            int x = (imageWidth - w) / 2,
+                y = (imageHeight - h) / 2;
+
+            int pathLength = path.Count;
+            List<TP> scaledPath = new List<TP>(pathLength);
+            for(int i = 0; i < pathLength; i++) {
+                TP p = path[i];
+                scaledPath.Add(p.IsDown ? new TP(x + p.x * scale, y + p.y * scale, p.IsNull) : p);
+            }
+
+            return scaledPath;
+        }
+
+        public void Test(int index) {
 			Point cellCoord = _cellsCoordinates[index];
 			Logger.Instance.WriteLog("{0}\t=> {1}, {2}", index.ToString(), cellCoord.X.ToString(), cellCoord.Y.ToString());
 			Logger.Instance.WriteLog("\t=> {0}", _cells[index].ToString());

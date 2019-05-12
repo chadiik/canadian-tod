@@ -157,7 +157,8 @@ namespace com.tod.sketch {
 					_completed = !_updateProcess;
 					if (_completed) {
 						OnCompleted();
-					}
+                        _updateProcess = false;
+                    }
 				}
 				else if (_previewImage != null) {
 					if(UpdatePreview() == false) {
@@ -365,7 +366,7 @@ namespace com.tod.sketch {
 		}
 
         private void Stroke(Point p0, Point p1) {
-            CvInvoke.Line(TPDither.Canvas, p0, p1, BLACK, 8);
+            CvInvoke.Line(TPDither.Canvas, p0, p1, BLACK, 1);
         }
 	}
 }

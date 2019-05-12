@@ -86,7 +86,11 @@ namespace com.tod {
 		public static Time time = new Time();
         public static bool sprayLine = false;
         public static bool stream = false;
-		public static Version version = Version.Legacy;
+        public static int cell = -1;
+        public static string wallConfig = "wall";
+        public static int xOffset = 0, yOffset;
+        public static double xScale = 1, yScale = 1;
+        public static Version version = Version.Legacy;
 
 		static Config() {
 			Load();
@@ -137,6 +141,35 @@ namespace com.tod {
 										break;
 								}
 								break;
+
+                            case "cell":
+                                int cell;
+                                if (int.TryParse(value, out cell)) Config.cell = cell;
+                                break;
+
+                            case "wallConfig":
+                                Config.wallConfig = value;
+                                break;
+
+                            case "xOffset":
+                                int xOffset;
+                                if (int.TryParse(value, out xOffset)) Config.xOffset = xOffset;
+                                break;
+
+                            case "yOffset":
+                                int yOffset;
+                                if (int.TryParse(value, out yOffset)) Config.yOffset = yOffset;
+                                break;
+
+                            case "xScale":
+                                double xScale;
+                                if (double.TryParse(value, out xScale)) Config.xScale = xScale;
+                                break;
+
+                            case "yScale":
+                                double yScale;
+                                if (double.TryParse(value, out yScale)) Config.yScale = yScale;
+                                break;
                         }
 					}
 				}

@@ -56,14 +56,16 @@ namespace Timeline {
 				candidateImage = new Image(candidateImage),
 				faceRecognition = new Image(faceRecognition),
 				debugPreview = new Image(debugPreview),
+                wallPreview = new Image(wallPreviewImage),
 				processGallery = new ImageGallery(processGallery, new Image(galleryItemTemplate))
 			};
 
 			Wall.Parameters wp;
-			if (!JSON.Load("wall", out wp))
+			if (!JSON.Load(Config.wallConfig, out wp))
 				wp = new Wall.Parameters();
 
-			m_Scenario = new Scenario(new Wall(wp));
+            Wall wall = new Wall(wp);
+            m_Scenario = new Scenario(wall);
 			m_Scenario.vision.SourceUpdated += (Mat image) => m_GUI.sourceImage.Source = image;
 			m_Scenario.vision.FaceDetected += (Mat image) => m_GUI.faceRecognition.Source = image;
 			//m_Scenario.vision.CandidateFound += (Portrait portrait) => m_GUI.debugPreview.Source = portrait.source.Mat.ToImage<Bgr, byte>();
@@ -73,8 +75,17 @@ namespace Timeline {
 				//m_GUI.debugPreview.Source = image;
 			};
 
-			//m_Scenario.sketch.Test("c.jpg");
-		}
+            Image<Bgr, byte> wallPreview = wall.Visualize(false);
+            m_GUI.wallPreview.Source = wallPreview;
+            Sketch.DrawToWallRequested += (List<TP> path) => {
+                List<TP> scaledPath = wall.Fit(wallPreview.Width, wallPreview.Height, path);
+                TP.Visualize(scaledPath, wallPreview, new MCvScalar(0), 1);
+                m_GUI.wallPreview.Source = wallPreview;
+                //m_GUI.debugPreview.Source = image;
+            };
+
+            //m_Scenario.sketch.Test("c.jpg");
+        }
 
 		private void OnFormClosed(object sender, FormClosedEventArgs e) {
 			try {

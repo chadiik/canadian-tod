@@ -71,6 +71,10 @@ namespace com.tod.ik {
 
 						string line = proc.StandardOutput.ReadLine();
 
+                        if(line.IndexOf("error") != -1) {
+                            Logger.Instance.WriteLog("IK_Sharp " + line);
+                        }
+
 						if(line.IndexOf(flag) != -1) {
 							string[] steps = line.Split(' ');
 							int xsteps, ssteps, esteps, wrist;
@@ -128,6 +132,7 @@ namespace com.tod.ik {
 			}
 
 			Add(cleanPath, x, y, false);
+
 
 			try {
 				using (StreamWriter fs = new StreamWriter(filepath)) {

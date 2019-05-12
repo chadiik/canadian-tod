@@ -58,10 +58,11 @@ namespace com.tod.sketch.path {
 			{ "base", new DetailParams { minSize = .0065, sizeRange = .2, brightPower = .7, distancePower = 4, alaunch = 30, breakdistance = Math.Pow(.06, 2), detailSizeThreshold = .1, minSteps = 4, stepsSizeMultiplier = 80  } },
 			{ "2", new DetailParams { minSize = .01, sizeRange = .3, brightPower = .7, distancePower = 4, alaunch = 90, breakdistance = .05, detailSizeThreshold = .1, minSteps = 4, stepsSizeMultiplier = 80  } },
 			{ "exp", new DetailParams { minSize = .012, sizeRange = .3, brightPower = 1.5, distancePower = 2, alaunch = 90, breakdistance = .05, detailSizeThreshold = .1, minSteps = 4, stepsSizeMultiplier = 80  } },
-			{ "3", new DetailParams { minSize = .015, sizeRange = .25, brightPower = 1.5, distancePower = 3, alaunch = 45, breakdistance = .01, detailSizeThreshold = .00, minSteps = 4, stepsSizeMultiplier = 80  } }
-		};
+			{ "3", new DetailParams { minSize = .015, sizeRange = .25, brightPower = 1.5, distancePower = 3, alaunch = 45, breakdistance = .01, detailSizeThreshold = .00, minSteps = 4, stepsSizeMultiplier = 80  } },
+            { "4", new DetailParams { minSize = .01, sizeRange = .3, brightPower = .5, distancePower = 4, alaunch = 180, breakdistance = .05, detailSizeThreshold = .1, minSteps = 2, stepsSizeMultiplier = 20  } }
+        };
 
-		private static DetailParams preset = detailPresets["2"];
+		private static DetailParams preset = detailPresets["4"];
 		private static int numDistanceBreaks = 0;
 
 		public static void GetOrderedList(OTP startPosition) {
@@ -137,6 +138,7 @@ namespace com.tod.sketch.path {
 					double distanceCenter = Math.Sqrt(vx * vx + vy * vy);
 					double brightness = (Math.Pow((double)item.brightness, preset.brightPower) * Math.Pow(distanceCenter, preset.distancePower));
 					double size = minSize + brightness * sizeRange;
+                    size = minSize + Math.Pow(brightness * 10, 2) / 10.0 * sizeRange;
 					if (size > minSize + sizeRange * preset.detailSizeThreshold) {
 						DrawDetail(
 							_ordered[numOrdered - 2].point,

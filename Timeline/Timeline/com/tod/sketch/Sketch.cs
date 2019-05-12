@@ -1,4 +1,5 @@
-﻿using com.tod.core;
+﻿using chadiik.algorithms;
+using com.tod.core;
 using com.tod.sketch.hatch;
 using com.tod.sketch.zigzag;
 using Emgu.CV;
@@ -25,8 +26,9 @@ namespace com.tod.sketch {
 
 		public static event DisplayEntryRequest DisplayEntryRequested;
 		public static event SketchComplete SketchCompleted;
+		public static event SketchComplete DrawToWallRequested;
 
-		private TODDraw m_TODDraw;
+        private TODDraw m_TODDraw;
 		private Zigzag m_Zigzag;
 		private Hatch m_Hatch;
 		private Version m_Version;
@@ -100,5 +102,56 @@ namespace com.tod.sketch {
 
 			DisplayEntryRequested?.Invoke(image);
 		}
-	}
+
+        public static void DrawToWall(List<TP> path) {
+
+            DrawToWallRequested?.Invoke(path);
+        }
+
+        public static List<TP> Optimize(List<TP> original, float simplificationTolerance, double breakDistance) {
+
+            // Copy all down
+            List<Point> path = new List<Point>();
+            for (int i = 0, numPoints = original.Count; i < numPoints; i++) {
+                TP tp = original[i];
+                if (tp.IsDown) {
+                    path.Add(tp.ToPoint());
+                }
+            }
+
+            path = SimplifyJS.Simplify(path, simplificationTolerance);
+
+            double pathLength = 0;
+            int penUps = 2;
+            int coordinates = 0;
+
+            List<TP> optimized = new List<TP> { TP.PenUp };
+            Point previous = default(Point);
+            for (int i = 0, numPoints = path.Count; i < numPoints; i++) {
+                Point current = path[i];
+                double vx = current.X - previous.X;
+                double vy = current.Y - previous.Y;
+                double d = Math.Sqrt(vx * vx + vy * vy);
+                pathLength += d;
+                if (d < breakDistance) {
+                    optimized.Add(new TP(current.X, current.Y));
+                    coordinates++;
+                }
+                else {
+                    optimized.Add(TP.PenUp);
+                    penUps++;
+                }
+
+                previous = current;
+            }
+
+            optimized.Add(TP.PenUp);
+
+            Logger.Instance.WriteLog("Path length = {0} mm", Math.Floor(pathLength));
+            Logger.Instance.WriteLog("Coordinates = {0}x", coordinates);
+            Logger.Instance.WriteLog("Pen ups = {0}x", penUps);
+
+            return optimized;
+        }
+    }
 }

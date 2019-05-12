@@ -16,7 +16,12 @@ namespace simpleIK_sharp
 			if(args.Length > 0) {
 
 				Console.WriteLine("Hello '{0}'!", args[0]);
-				Read_File(args[0]);
+                try {
+                    Read_File(args[0]);
+                }
+                catch(Exception ex) {
+                    Console.WriteLine("error '{0}'!", ex.ToString());
+                }
 				string stepsFilepath = args[0] + ".steps";
 			}
 			else {

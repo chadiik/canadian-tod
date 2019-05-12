@@ -21,13 +21,13 @@ namespace com.tod.scenarios {
 
 		public State state;
 		public Vision vision;
-		public Canvas canvas;
+		public Wall wall;
 		public IK ik;
 		public Streamer streamer;
 
-		public Scenario(Canvas canvas) {
+		public Scenario(Wall wall) {
 
-			this.canvas = canvas;
+			this.wall = wall;
 			state = State.Idle;
 
 			vision = new Vision( Config.debug ? Source.VideoFile : Source.Camera);
@@ -82,10 +82,56 @@ namespace com.tod.scenarios {
 			}
 		}
 
+        private long m_LastCompletedOn = 0;
 		private void OnSketchCompleted(List<TP> path) {
 
-			Sketch.SketchCompleted -= OnSketchCompleted;
-			List<TP> sketch = canvas.ToCell(path);
+            Sketch.SketchCompleted -= OnSketchCompleted;
+            if (Config.time.ElapsedMillis - m_LastCompletedOn < 100)
+                return;
+
+            m_LastCompletedOn = Config.time.ElapsedMillis;
+
+            List<TP> square = new List<TP> {
+                TP.PenUp,
+                    new TP(.1f, .1f),
+                    new TP(.9f, .1f),
+                    new TP(.9f, .9f),
+                    new TP(.1f, .9f),
+                    new TP(.1f, .1f)
+                };
+
+            if (false) {
+
+                path.Clear();
+                for (int i = 0; i < 300; i++)
+                    path.AddRange(square);
+            }
+
+            if (false) {
+                path.InsertRange(0, square);
+                path.InsertRange(0, square);
+            }
+
+            List<TP> sketch = wall.ToCell(path, (Config.cell++) % wall.UnitCells.Count);
+            sketch = Sketch.Optimize(sketch, 4, 100);
+
+            Sketch.DrawToWall(sketch);
+
+            int xOffset = Config.xOffset;
+            int yOffset = Config.yOffset;
+            float xScale = (float)Config.xScale;
+            float overallScale = 1f;
+            for (int i = 0, numPoints = sketch.Count; i < numPoints; i++) {
+                TP p = sketch[i];
+                if (p.IsDown) {
+                    float y = wall.height - p.y;
+                    float skew = y / 1900f * 525f;
+                    float x = (p.x + skew) * xScale * overallScale + xOffset;
+                    y = y * overallScale + yOffset;
+                    sketch[i] = new TP(x, y, p.IsNull);
+                }
+            }
+
 			state = State.Streaming;
 
 			StreamState onStreamCompleted = null;
@@ -106,15 +152,18 @@ namespace com.tod.scenarios {
 				streamer.StreamCompleted += onStreamCompleted;
 
 				int job = -1;
-				if (Config.stream) {
-					job = ik.Convert(sketch, (int xsteps, int ssteps, int esteps, int wrist) => {
-						//Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
-						streamer.Stream(Math.Abs(xsteps), Math.Abs(ssteps), Math.Abs(esteps), Math.Abs(wrist));
+                if (Config.stream) {
+                    job = ik.Convert(sketch, (int xsteps, int ssteps, int esteps, int wrist) => {
+                        Logger.Instance.SilentLog("{3}: x[{0}] s[{1}] e[{2}]", xsteps, ssteps, esteps, wrist, job);
+                        if (xsteps < 0 || ssteps < 0 || esteps < 0) {
+                            Logger.Instance.StreamLog("!!!");
+                        }
+						streamer.Stream(xsteps, ssteps, esteps, wrist);
 					});
 					Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
 				}
 				else {
-					System.Threading.Thread.Sleep(5000);
+					System.Threading.Thread.Sleep(4000);
 					streamer.Stream(0, 0, 0, 0);
 				}
 			};

@@ -28,6 +28,7 @@ namespace com.tod.stream {
         private object m_StreamLock = new object();
         private bool m_IsStreaming = false;
         private bool m_AwaitingFeedback = true;
+        private bool m_AwaitingCompletedFeedback = false;
         private int m_CountPackets = 0;
         private bool m_Debug = true;
 
@@ -42,8 +43,10 @@ namespace com.tod.stream {
 
             m_StreamQueue.Clear();
 			m_AwaitingFeedback = false;
+            m_AwaitingCompletedFeedback = false;
 
-			if (m_ArduinoSerial.IsConnected) {
+
+            if (m_ArduinoSerial.IsConnected) {
                 lock (m_StreamLock) {
                     m_AwaitingFeedback = false;
                 }
@@ -159,16 +162,19 @@ namespace com.tod.stream {
 						Send("q00000_00000_00000_0");
 						Thread.Sleep(1000);
 						m_StreamQueue.Clear();
-						StreamCompleted?.Invoke();
+
+                        m_AwaitingFeedback = true;
+                        m_AwaitingCompletedFeedback = true;
+                        //StreamCompleted?.Invoke();
 					}
 					else {
 						Send(command);
 					}
 
-                    Thread.Sleep(10);
+                    //Thread.Sleep(10);
                 }
                 else {
-                    Thread.Sleep(50);
+                    Thread.Sleep(20);
                 }
             }
         }
@@ -196,6 +202,12 @@ namespace com.tod.stream {
 			try {
                 Logger.Instance.StreamLog("i: '{0}'", value);
                 switch (value) {
+                    case "q":
+                        lock (m_StreamLock) {
+                            m_AwaitingFeedback = false;
+                        }
+                        break;
+
                     case "c":
                         lock (m_StreamLock) {
                             m_AwaitingFeedback = false;
@@ -213,6 +225,11 @@ namespace com.tod.stream {
                     case "r":
                         lock (m_StreamLock) {
                             m_AwaitingFeedback = false;
+
+                            if (m_AwaitingCompletedFeedback) {
+                                m_AwaitingCompletedFeedback = false;
+                                StreamCompleted?.Invoke();
+                            }
                         }
                         break;
 

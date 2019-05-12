@@ -20,8 +20,9 @@ namespace Timeline {
 		public Image faceRecognition;
 		public Image candidateImage;
 		public Image debugPreview;
+		public Image wallPreview;
 
-		public ImageGallery processGallery;
+        public ImageGallery processGallery;
 
 		private Dictionary<IImage, ImageGallery.Item> m_FaceEntries;
 

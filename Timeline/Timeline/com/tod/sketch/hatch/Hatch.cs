@@ -97,7 +97,15 @@ namespace com.tod.sketch.hatch {
 					//TP.Visualize(hatcher.path, preview, new MCvScalar(0), 1);
 					SketchPreview(hatcher.path, preview, new MCvScalar(0), 1);
 
-					SketchCompleted?.Invoke(hatcher.path);
+                    float sw = 1f / regionsMap.Width,
+                        sh = 1f / regionsMap.Height;
+                    int pathLength = hatcher.path.Count;
+                    List<TP> scaledPath = new List<TP>(pathLength);
+                    for(int i = 0; i < pathLength; i++) {
+                        TP p = hatcher.path[i];
+                        scaledPath.Add(p.IsDown ? new TP(p.x * sw, p.y * sh, p.IsNull) : p);
+                    }
+					SketchCompleted?.Invoke(scaledPath);
 				};
 
 				hatcher.Process(sourceImage.Clone(), firstContours);
@@ -185,14 +193,16 @@ namespace com.tod.sketch.hatch {
 					}
 					else {
 						penDown = false;
-						Thread.Sleep(3);
+						Thread.Sleep(2);
 					}
 
-					if(i % 10 == 0)
-						Thread.Sleep(1);
-					Sketch.ShowProcessImage(image, "Preview");
+                    if (i % 10 == 0) {
+                        Thread.Sleep(1);
+                        Sketch.ShowProcessImage(image, "Preview");
+                    }
 				}
-			})).Start();
+                Sketch.ShowProcessImage(image, "Preview");
+            })).Start();
 		}
 	}
 }

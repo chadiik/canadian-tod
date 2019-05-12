@@ -26,11 +26,10 @@ namespace com.tod.canvas {
 			this.height = height;
 		}
 
-		public virtual List<TP> ToCell(List<TP> path) {
+		public virtual List<TP> ToCell(List<TP> path, int cell = 0) {
 
 			List<TP> result = new List<TP>();
-			int pathLength = path.Count;
-			for(int i = 0; i < pathLength; i++) {
+			for(int i = 0; i < path.Count; i++) {
 				TP p = path[i];
 				result.Add(p.IsDown ? new TP(x + p.x * width, y + p.y * width, p.IsNull) : new TP(p.x, p.y, p.IsNull));
 			}

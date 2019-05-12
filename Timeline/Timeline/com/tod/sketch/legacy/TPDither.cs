@@ -128,7 +128,7 @@ namespace com.tod.sketch {
 						double vy = py - cy;
 						double dc = Math.Sqrt(vx * vx + vy * vy);
 						double inverseDc = 1 - dc;
-						double penalty = Math.Pow(dc * 1.1, 1.5);
+						double penalty = Math.Pow(dc * .8, 1.5);
 
 						double dThresh = _random.NextDouble() * Math.Pow(inverseDc, 1.5);
 						// edges mask
