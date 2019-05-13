@@ -4,6 +4,8 @@ using com.tod.ik;
 using com.tod.sketch;
 using com.tod.stream;
 using com.tod.vision;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +115,16 @@ namespace com.tod.scenarios {
             }
 
             List<TP> sketch = wall.ToCell(path, (Config.cell++) % wall.UnitCells.Count);
-            sketch = Sketch.Optimize(sketch, 4, 100);
+			switch (Config.version) {
+				case Sketch.Version.Legacy:
+					sketch = Sketch.Optimize(sketch, 4, 100);
+					break;
+
+				case Sketch.Version.Hatch:
+					//sketch = Sketch.Optimize(sketch, 0, 200);
+					tod.sketch.hatch.Hatch.SketchPreview(sketch.ToList(), new Image<Bgr, byte>(wall.width, wall.height, new Bgr(255, 255, 255)), new MCvScalar(0), 1);
+					break;
+			}
 
             Sketch.DrawToWall(sketch);
 
