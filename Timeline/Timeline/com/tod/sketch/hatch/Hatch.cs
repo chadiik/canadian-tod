@@ -93,9 +93,9 @@ namespace com.tod.sketch.hatch {
 
 				hatcher.ProcessCompleted += () => {
 					Logger.Instance.WriteLog("Hatch completed");
-					Image<Bgr, byte> preview = new Image<Bgr, byte>(regionsMap.Width, regionsMap.Height, new Bgr(255, 255, 255));
+					//Image<Bgr, byte> preview = new Image<Bgr, byte>(regionsMap.Width, regionsMap.Height, new Bgr(255, 255, 255));
 					//TP.Visualize(hatcher.path, preview, new MCvScalar(0), 1);
-					SketchPreview(hatcher.path, preview, new MCvScalar(0), 1);
+					//SketchPreview(hatcher.path, preview, new MCvScalar(0), 1);
 
                     float sw = 1f / regionsMap.Width,
                         sh = 1f / regionsMap.Height;
@@ -176,7 +176,7 @@ namespace com.tod.sketch.hatch {
 			return data;
 		}
 
-		private static void SketchPreview(List<TP> points, Image<Bgr, byte> image, MCvScalar lineColor, int lineThickness) {
+		public static void SketchPreview(List<TP> points, Image<Bgr, byte> image, MCvScalar lineColor, int lineThickness) {
 
 			(new Thread(() => {
 				bool penDown = false;

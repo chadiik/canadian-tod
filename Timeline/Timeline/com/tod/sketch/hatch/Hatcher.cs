@@ -45,11 +45,14 @@ namespace com.tod.sketch.hatch {
 			}
 
 			path = new List<TP> { TP.PenUp };
+			List<HatchLine> mergedPath = new List<HatchLine>();
 
 			Action addFirstContour = () => {
 				if (firstContours != null) {
-					foreach (Contour contour in firstContours)
+					foreach (Contour contour in firstContours) {
 						path.AddRange(contour.ToPath());
+						mergedPath.Add(new HatchLine(contour.points));
+					}
 				}
 			};
 
@@ -62,6 +65,7 @@ namespace com.tod.sketch.hatch {
 							path.Add(new TP(points[i].X, points[i].Y));
 					}
 					path.Add(TP.PenUp);
+					mergedPath.Add(new HatchLine(points));
 				}
 			};
 
@@ -73,12 +77,18 @@ namespace com.tod.sketch.hatch {
 			Image<Bgr, byte> pathPreview = new Image<Bgr, byte>(regionsMap.Size);
 			int numThresholds = thresholds.Length - 2;
 			int thresholdsProcessed = 0;
+			Comparison<HatchLine> mergedPathSort = HatchLine.DistanceSort(new Point(regionsMap.Width / 2, regionsMap.Height / 2));
 			Action callback = () => {
 				thresholdsProcessed++;
 				Logger.Instance.WriteLog("Processed {0}/{1} thresholds", thresholdsProcessed, numThresholds);
 				if (thresholdsProcessed == numThresholds) {
-					Sketch.ShowProcessImage(hatchesPreview, "Hatches");
-					Sketch.ShowProcessImage(pathPreview, "Path");
+					//Sketch.ShowProcessImage(hatchesPreview, "Hatches");
+					//Sketch.ShowProcessImage(pathPreview, "Path");
+
+					HatchLine.Sanitize(mergedPath);
+					mergedPath.Sort(mergedPathSort);
+					path = HatchLine.Link(mergedPath, 60);
+
 					ProcessCompleted?.Invoke();
 				}
 			};
@@ -95,9 +105,12 @@ namespace com.tod.sketch.hatch {
 
 					hatchRegion.Link(threshold, regionsMap);
 					path.AddRange(hatchRegion.path);
-					if (i == 0) {
+					mergedPath.AddRange(hatchRegion.lines);
+
+					bool isFirstThreshold = i == 0;
+					if (isFirstThreshold) {
 						addFirstContour();
-						//addHoughLines();
+						addHoughLines();
 					}
 					TP.Visualize(hatchRegion.path, pathPreview, new MCvScalar(255, 255, 255), 1);
 

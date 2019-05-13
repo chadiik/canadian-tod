@@ -13,6 +13,7 @@ namespace com.tod.sketch.hatch {
 
 		public List<Segment> hatches;
 		public List<TP> path;
+		public List<HatchLine> lines;
 
 		public void Process(Threshold threshold, Image<Gray, byte> map) {
 
@@ -55,6 +56,18 @@ namespace com.tod.sketch.hatch {
 				directionEnd = new PointF((float)Math.Cos(threshold.Angle), -(float)Math.Sin(threshold.Angle));
 
 			path = new List<TP> { TP.PenUp };
+			HatchLine line = new HatchLine();
+			lines = new List<HatchLine> { line };
+			Action newLine = () => {
+				if (lines[lines.Count - 1].Length < 2) {
+					lines[lines.Count - 1].Clear();
+				}
+				else {
+					line = new HatchLine();
+					lines.Add(line);
+				}
+			};
+
 			bool first = true;
 			Segment hatch = hatches.Count > 0 ? hatches[0] : null;
 			while (hatch != null) {
@@ -66,11 +79,14 @@ namespace com.tod.sketch.hatch {
 
 				if (path.Count > 0) {
 					Point previous = new Point((int)path[path.Count - 1].x, (int)path[path.Count - 1].y);
-					if(!IsWithinRegion(start, previous, 4, brightness, data, map.Cols, map.Rows))
+					if (!IsWithinRegion(start, previous, 4, brightness, data, map.Cols, map.Rows)) {
 						path.Add(TP.PenUp);
+						newLine();
+					}
 				}
 
 				path.Add(new TP(start.X, start.Y));
+				line.Add(start);
 
 				if (hatches.Count == 0) {
 					path.Add(TP.PenUp);
