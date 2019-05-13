@@ -185,8 +185,9 @@ namespace com.tod.stream {
 
             try {
                 if (m_Debug) {
-
-                }
+					if (value == "q00000_00000_00000_0")
+						StreamCompleted?.Invoke();
+				}
                 else {
                     m_ArduinoSerial.Send(ref value);
                 }
