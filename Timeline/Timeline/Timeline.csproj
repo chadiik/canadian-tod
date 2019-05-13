@@ -72,6 +72,7 @@
     <Compile Include="com\tod\Logger.cs" />
     <Compile Include="com\tod\sketch\hatch\Hatch.cs" />
     <Compile Include="com\tod\sketch\hatch\Hatcher.cs" />
+    <Compile Include="com\tod\sketch\hatch\HatchLine.cs" />
     <Compile Include="com\tod\sketch\hatch\HatchProbe.cs" />
     <Compile Include="com\tod\sketch\hatch\HatchRegion.cs" />
     <Compile Include="com\tod\sketch\hatch\Segment.cs" />

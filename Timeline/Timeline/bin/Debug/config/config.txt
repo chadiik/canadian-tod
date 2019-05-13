@@ -2,16 +2,16 @@
 linestyle=stroke
 
 # if debug is true, will use sample video file; Otherwise stream from webcam
-debug=false
+debug=true
 
 # use serial streaming or mock it
-stream=true
+stream=false
 
 # sample is the video entry for debug mode
 sample=faces.mp4
 
 # sketch routine's version: 'legacy' (orbital path tracing) or 'hatch'
-version=legacy
+version=hatch
 
 # starting cell (0-5)
 cell=0
