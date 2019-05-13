@@ -108,18 +108,24 @@ namespace com.tod.sketch {
             DrawToWallRequested?.Invoke(path);
         }
 
-        public static List<TP> Optimize(List<TP> original, float simplificationTolerance, double breakDistance) {
+		public static List<TP> Optimize(List<TP> original, float simplificationTolerance, double breakDistance) {
 
-            // Copy all down
-            List<Point> path = new List<Point>();
-            for (int i = 0, numPoints = original.Count; i < numPoints; i++) {
-                TP tp = original[i];
-                if (tp.IsDown) {
-                    path.Add(tp.ToPoint());
-                }
-            }
+			// Copy all down
+			List<Point> path = new List<Point>();
+			for (int i = 0, numPoints = original.Count; i < numPoints; i++) {
+				TP tp = original[i];
+				if (tp.IsDown) {
+					path.Add(tp.ToPoint());
+				}
+			}
 
-            path = SimplifyJS.Simplify(path, simplificationTolerance);
+			return Optimize(path, simplificationTolerance, breakDistance);
+		}
+
+		public static List<TP> Optimize(List<Point> path, float simplificationTolerance, double breakDistance) {
+
+			if (simplificationTolerance > float.Epsilon)
+				path = SimplifyJS.Simplify(path, simplificationTolerance);
 
             double pathLength = 0;
             int penUps = 2;
