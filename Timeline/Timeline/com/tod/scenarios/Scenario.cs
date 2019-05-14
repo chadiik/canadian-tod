@@ -144,13 +144,14 @@ namespace com.tod.scenarios {
 				TP.PenUp,
 				new TP(.1f, .9f),
 				TP.PenUp,
-				new TP(.1f, .1f)
-			};
+				new TP(.1f, .1f),
+                TP.PenUp
+            };
 
 			if (true) {
 				List<TP> tpSquare = wall.ToCell(square, cell);
 				sketch.InsertRange(0, tpSquare);
-				sketch.InsertRange(0, tpSquare);
+				//sketch.InsertRange(0, tpSquare);
 			}
 
 			Sketch.DrawToWall(sketch);
@@ -158,19 +159,33 @@ namespace com.tod.scenarios {
             int xOffset = Config.xOffset;
             int yOffset = Config.yOffset;
             float xScale = (float)Config.xScale;
+            float yScale = (float)Config.yScale;
             float overallScale = 1f;
+            float skewYMax = (float)Config.skewYMax;
+            float skewXOffset = (float)Config.skewXOffset;
+
+            Func<float, float, TP> transform = (px, py) => {
+                float y = wall.height - py;
+                float skew = y / skewYMax * skewXOffset;
+                float x = (px + skew) * xScale * overallScale + xOffset;
+                y = y * yScale * overallScale + yOffset;
+                return new TP(x, y);
+            };
+
             for (int i = 0, numPoints = sketch.Count; i < numPoints; i++) {
                 TP p = sketch[i];
                 if (p.IsDown) {
-                    float y = wall.height - p.y;
-                    float skew = y / 1900f * 525f;
-                    float x = (p.x + skew) * xScale * overallScale + xOffset;
-                    y = y * overallScale + yOffset;
-                    sketch[i] = new TP(x, y, p.IsNull);
+                    sketch[i] = transform(p.x, p.y);
                 }
             }
 
-			state = State.Streaming;
+            TP idleCoo = transform(Config.idleX, Config.idleY);
+            for (int i = 0; i < 2; i++) {
+                sketch.Add(TP.PenUp);
+                sketch.Add(idleCoo);
+            }
+
+            state = State.Streaming;
 
 			StreamState onStreamCompleted = null;
 			onStreamCompleted = () => {
