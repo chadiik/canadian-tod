@@ -60,12 +60,22 @@ namespace Timeline {
 				processGallery = new ImageGallery(processGallery, new Image(galleryItemTemplate))
 			};
 
+			SketchJobProcessed sjp;
+			SketchJob sj = null;
+			bool resume = false;
+			if (JSON.Load("sketchJobProcessed", out sjp)) {
+				if (JSON.Load("sketchJob", out sj)) {
+					DialogResult confirmResult = MessageBox.Show("Would you like to resume the previous sketch?", "Resume", MessageBoxButtons.YesNo);
+					resume = confirmResult == DialogResult.Yes;
+				}
+			}
+
 			Wall.Parameters wp;
 			if (!JSON.Load(Config.wallConfig, out wp))
 				wp = new Wall.Parameters();
 
             Wall wall = new Wall(wp);
-            m_Scenario = new Scenario(wall);
+            m_Scenario = new Scenario(wall, resume ? Scenario.State.ProcessingPortrait : Scenario.State.Idle);
 			m_Scenario.vision.SourceUpdated += (Mat image) => m_GUI.sourceImage.Source = image;
 			m_Scenario.vision.FaceDetected += (Mat image) => m_GUI.faceRecognition.Source = image;
 			//m_Scenario.vision.CandidateFound += (Portrait portrait) => m_GUI.debugPreview.Source = portrait.source.Mat.ToImage<Bgr, byte>();
@@ -84,8 +94,8 @@ namespace Timeline {
                 //m_GUI.debugPreview.Source = image;
             };
 
-            //m_Scenario.sketch.Test("c.jpg");
-        }
+			if (resume) m_Scenario.Resume(sj, sjp.processed);
+		}
 
 		private void OnFormClosed(object sender, FormClosedEventArgs e) {
 			try {

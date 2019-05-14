@@ -90,7 +90,7 @@ namespace com.tod {
         public static string wallConfig = "wall";
         public static int xOffset = 0, yOffset;
         public static double xScale = 1, yScale = 1;
-        public static Version version = Version.Legacy;
+		public static Version version = Version.Legacy;
 
 		static Config() {
 			Load();
@@ -170,7 +170,7 @@ namespace com.tod {
                                 double yScale;
                                 if (double.TryParse(value, out yScale)) Config.yScale = yScale;
                                 break;
-                        }
+						}
 					}
 				}
 			}

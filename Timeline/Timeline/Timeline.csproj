@@ -83,6 +83,7 @@
     <Compile Include="com\tod\sketch\legacy\path\PathOrder.cs" />
     <Compile Include="com\tod\sketch\legacy\path\PathSequencer.cs" />
     <Compile Include="com\tod\sketch\legacy\path\Wanderer.cs" />
+    <Compile Include="com\tod\sketch\legacy\TODDrawTimer.cs" />
     <Compile Include="com\tod\sketch\legacy\TODFilters.cs" />
     <Compile Include="com\tod\sketch\legacy\TODPath.cs" />
     <Compile Include="com\tod\sketch\legacy\TPDither.cs" />

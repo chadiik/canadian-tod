@@ -11,7 +11,7 @@ stream=false
 sample=faces.mp4
 
 # sketch routine's version: 'legacy' (orbital path tracing) or 'hatch'
-version=hatch
+version=legacy
 
 # starting cell (0-5)
 cell=0
