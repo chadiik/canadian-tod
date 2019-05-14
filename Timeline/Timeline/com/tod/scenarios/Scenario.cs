@@ -27,10 +27,10 @@ namespace com.tod.scenarios {
 		public IK ik;
 		public Streamer streamer;
 
-		public Scenario(Wall wall) {
+		public Scenario(Wall wall, State state = State.Idle) {
 
 			this.wall = wall;
-			state = State.Idle;
+			this.state = state;
 
 			vision = new Vision( Config.debug ? Source.VideoFile : Source.Camera);
 			vision.CandidateFound += OnCandidateFound;
@@ -40,15 +40,19 @@ namespace com.tod.scenarios {
 
 			streamer = new CanadianStreamer(!Config.stream);
 			streamer.ConnectionFailed += () => Logger.Instance.WriteLog("Scenario: CONNECTION TO CANADIAN STREAMER FAILED!");
-
-			Timer timer = new Timer(1000.0);
-			ElapsedEventHandler handler = null;
-			handler = new ElapsedEventHandler((object sender, ElapsedEventArgs eventArgs) => Update());
-			timer.Elapsed += handler;
-			timer.Start();
+			streamer.PacketSent += (total) => JSON.Save(new SketchJobProcessed(total), "sketchJobProcessed");
 		}
 
-        public void Pause() {
+		public void Resume(SketchJob job, int processed) {
+
+			List<TP> sketch = job.GetUnprocessedSketch(processed);
+			if(sketch != null) {
+				Config.cell = job.cell + 1;
+				StreamSketch(sketch, job.cell);
+			}
+		}
+
+		public void Pause() {
 
             ik.Paused = true;
             streamer.Pause();
@@ -87,34 +91,30 @@ namespace com.tod.scenarios {
         private long m_LastCompletedOn = 0;
 		private void OnSketchCompleted(List<TP> path) {
 
-            Sketch.SketchCompleted -= OnSketchCompleted;
-            if (Config.time.ElapsedMillis - m_LastCompletedOn < 100)
-                return;
+			Sketch.SketchCompleted -= OnSketchCompleted;
+			if (Config.time.ElapsedMillis - m_LastCompletedOn < 100)
+				return;
 
-            m_LastCompletedOn = Config.time.ElapsedMillis;
+			m_LastCompletedOn = Config.time.ElapsedMillis;
 
-            List<TP> square = new List<TP> {
-                TP.PenUp,
-                    new TP(.1f, .1f),
-                    new TP(.9f, .1f),
-                    new TP(.9f, .9f),
-                    new TP(.1f, .9f),
-                    new TP(.1f, .1f)
-                };
+			List<TP> square = new List<TP> {
+				TP.PenUp,
+					new TP(.1f, .1f),
+					new TP(.9f, .1f),
+					new TP(.9f, .9f),
+					new TP(.1f, .9f),
+					new TP(.1f, .1f)
+				};
 
-            if (false) {
+			if (false) {
 
-                path.Clear();
-                for (int i = 0; i < 300; i++)
-                    path.AddRange(square);
-            }
+				path.Clear();
+				for (int i = 0; i < 300; i++)
+					path.AddRange(square);
+			}
 
-            if (false) {
-                path.InsertRange(0, square);
-                path.InsertRange(0, square);
-            }
-
-            List<TP> sketch = wall.ToCell(path, (Config.cell++) % wall.UnitCells.Count);
+			int cell = (Config.cell++) % wall.UnitCells.Count;
+			List<TP> sketch = wall.ToCell(path, cell);
 			switch (Config.version) {
 				case Sketch.Version.Legacy:
 					sketch = Sketch.Optimize(sketch, 4, 100);
@@ -126,7 +126,34 @@ namespace com.tod.scenarios {
 					break;
 			}
 
-            Sketch.DrawToWall(sketch);
+			StreamSketch(sketch, cell);
+		}
+
+		private void StreamSketch(List<TP> sketch, int cell) {
+
+			JSON.Save(SketchJob.Create(sketch, cell), "sketchJob");
+			JSON.Save(new SketchJobProcessed(0), "sketchJobProcessed");
+
+			List<TP> square = new List<TP> {
+				TP.PenUp,
+				new TP(.1f, .1f),
+				TP.PenUp,
+				new TP(.9f, .1f),
+				TP.PenUp,
+				new TP(.9f, .9f),
+				TP.PenUp,
+				new TP(.1f, .9f),
+				TP.PenUp,
+				new TP(.1f, .1f)
+			};
+
+			if (true) {
+				List<TP> tpSquare = wall.ToCell(square, cell);
+				sketch.InsertRange(0, tpSquare);
+				sketch.InsertRange(0, tpSquare);
+			}
+
+			Sketch.DrawToWall(sketch);
 
             int xOffset = Config.xOffset;
             int yOffset = Config.yOffset;
@@ -174,7 +201,7 @@ namespace com.tod.scenarios {
 					Logger.Instance.WriteLog("Scenario: Started IK conversion job: {0}", job);
 				}
 				else {
-					System.Threading.Thread.Sleep(4000);
+					System.Threading.Thread.Sleep(100);
 					streamer.Stream(0, 0, 0, 0);
 				}
 			};
@@ -196,15 +223,6 @@ namespace com.tod.scenarios {
 
 		private void OnIKConversionCompleted(int jobID) {
 			Logger.Instance.WriteLog("Scenario: Completed IK conversion job: {0}", jobID);
-		}
-
-		private void Update() {
-
-			switch (state) {
-				case State.Idle:
-
-					break;
-			}
 		}
 	}
 }

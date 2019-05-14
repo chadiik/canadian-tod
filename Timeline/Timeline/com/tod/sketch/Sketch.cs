@@ -17,6 +17,48 @@ namespace com.tod.sketch {
 	public delegate void DisplayEntryRequest(IImage image);
 	public delegate void SketchComplete(List<TP> path);
 
+	public class SketchJobProcessed {
+		public int processed = 0;
+
+		public SketchJobProcessed(int processed = 0) {
+			this.processed = processed;
+		}
+	}
+
+	public class SketchJob {
+		public int cell = -1;
+		public int[] path = null;
+
+		public SketchJob(int[] path, int cell) {
+			this.path = path;
+			this.cell = cell;
+		}
+
+		public List<TP> GetUnprocessedSketch(int processed) {
+			if (cell != -1 && path != null && processed * 2 < path.Length) {
+				int pathLength = path.Length;
+				int start = Math.Max(0, processed * 2);
+				List<TP> sketch = new List<TP>(pathLength / 2 - start + 2) { TP.PenUp };
+				for(int i = start; i < pathLength; i+=2) {
+					sketch.Add(new TP(path[i], path[i + 1]));
+				}
+				return sketch;
+			}
+			return null;
+		}
+
+		public static SketchJob Create(List<TP> sketch, int cell) {
+			int sketchLength = sketch.Count;
+			int[] path = new int[sketchLength * 2];
+			for (int i = 0; i < sketchLength; i++) {
+				path[i * 2] = (int)sketch[i].x;
+				path[i * 2 + 1] = (int)sketch[i].y;
+			}
+
+			return new SketchJob(path, cell);
+		}
+	}
+
 	public class Sketch {
 
 		public enum Version { Legacy, Zigzag, Hatch };
