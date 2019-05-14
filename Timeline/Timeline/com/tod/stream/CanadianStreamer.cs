@@ -22,6 +22,8 @@ namespace com.tod.stream {
 		public event StreamState StreamPaused;
 		public event StreamState StreamStarted;
 
+		public event PacketSent PacketSent;
+
 		private ArduinoCom m_ArduinoSerial;
         private Queue<string> m_StreamQueue;
         private Thread m_Streamer;
@@ -30,6 +32,7 @@ namespace com.tod.stream {
         private bool m_AwaitingFeedback = true;
         private bool m_AwaitingCompletedFeedback = false;
         private int m_CountPackets = 0;
+		private int m_CountSentCommands = 0;
         private bool m_Debug = true;
 
         public CanadianStreamer(bool debug) {
@@ -85,8 +88,9 @@ namespace com.tod.stream {
 
             m_IsStreaming = true;
             m_CountPackets = 0;
+			m_CountSentCommands = 0;
 
-            if (m_Streamer == null) {
+			if (m_Streamer == null) {
                 m_Streamer = new Thread(ConsumeStreamQueue);
                 m_Streamer.Start();
             }
@@ -130,14 +134,12 @@ namespace com.tod.stream {
 
 		public void Stream(int xsteps, int ssteps, int esteps, int wrist) {
             const string pad5 = "D5";
-			string command = xsteps == 0 && ssteps == 0 && esteps == 0 && wrist == 0 ?
-				"1" :
-				string.Format("q{0}_{1}_{2}_{3}", xsteps.ToString(pad5), ssteps.ToString(pad5), esteps.ToString(pad5), wrist);
+			string command = string.Format("q{0}_{1}_{2}_{3}", xsteps.ToString(pad5), ssteps.ToString(pad5), esteps.ToString(pad5), wrist);
 
 			Logger.Instance.SilentLog("Stream {0}", command); 
 			try {
 				if (m_Debug) {
-					m_StreamQueue.Enqueue("1");
+					m_StreamQueue.Enqueue("q00000_00000_00000_0");
 				}
 				else {
                     m_StreamQueue.Enqueue(command);
@@ -158,23 +160,16 @@ namespace com.tod.stream {
                         m_AwaitingFeedback = true;
                     }
 
-					if (command == "1") {
-						Send("q00000_00000_00000_0");
-						Thread.Sleep(1000);
-						m_StreamQueue.Clear();
-
-                        m_AwaitingFeedback = true;
+					if (command == "q00000_00000_00000_0") {
+						m_StreamQueue.Enqueue(command);
+						m_AwaitingFeedback = true;
                         m_AwaitingCompletedFeedback = true;
-                        //StreamCompleted?.Invoke();
 					}
-					else {
-						Send(command);
-					}
-
-                    //Thread.Sleep(10);
+					
+					Send(command);
                 }
                 else {
-                    Thread.Sleep(20);
+                    Thread.Sleep(5);
                 }
             }
         }
@@ -191,7 +186,9 @@ namespace com.tod.stream {
                 else {
                     m_ArduinoSerial.Send(ref value);
                 }
-            }
+
+				m_CountSentCommands++;
+			}
             catch (Exception ex) {
                 Logger.Instance.StreamLog("Streamer.Send({1}) error: {0}", ex.Message, value);
                 throw;
@@ -220,17 +217,13 @@ namespace com.tod.stream {
                         lock (m_StreamLock) {
                             m_AwaitingFeedback = true;
                         }
+						PacketSent?.Invoke(m_CountSentCommands);
                         Logger.Instance.StreamLog("Sent packet {0}", m_CountPackets++);
                         break;
 
                     case "r":
                         lock (m_StreamLock) {
                             m_AwaitingFeedback = false;
-
-                            if (m_AwaitingCompletedFeedback) {
-                                m_AwaitingCompletedFeedback = false;
-                                StreamCompleted?.Invoke();
-                            }
                         }
                         break;
 
@@ -241,7 +234,13 @@ namespace com.tod.stream {
                         ConnectionEstablished?.Invoke();
                         break;
                 }
-            }
+
+				if (m_AwaitingCompletedFeedback) {
+					m_AwaitingCompletedFeedback = false;
+					m_StreamQueue.Clear();
+					StreamCompleted?.Invoke();
+				}
+			}
 			catch (Exception ex) {
 				Logger.Instance.StreamLog("Streamer.Receive({1}) error: {0}", ex.Message, value);
                 throw;

@@ -8,6 +8,7 @@ namespace com.tod.stream {
 
 	public delegate void Connection();
 	public delegate void StreamState();
+	public delegate void PacketSent(int total);
 
 	public interface Streamer {
 
@@ -20,6 +21,8 @@ namespace com.tod.stream {
 		event StreamState StreamStarted;
 		event StreamState StreamCompleted;
 		event StreamState StreamPaused;
+
+		event PacketSent PacketSent;
 
 		void Open();
 		void Pause();
