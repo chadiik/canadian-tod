@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace com.tod.sketch.path {
 	class PathOrder {
@@ -39,8 +40,8 @@ namespace com.tod.sketch.path {
 			_ordered.Add(new OTP(TP.PenUp));
 			GetOrderedList(new OTP(new TP(.5f, .5f)));
 
-			float avgDistance = _avgDistance / (float)_avgOps;
-			float avgHue = _avgHue / (float)_avgOps;
+			float avgDistance = _avgDistance / _avgOps;
+			float avgHue = _avgHue / _avgOps;
 			Logger.Instance.SilentLog("Ops = {0} | Distance avg = {1} | Hue difference avg = {2}", _avgOps.ToString(), avgDistance.ToString("0.00000"), avgHue.ToString("0.00000"));
 			Logger.Instance.SilentLog("Removed nodes = {0}", _removedNodes.ToString());
 
@@ -59,16 +60,16 @@ namespace com.tod.sketch.path {
 			{ "2", new DetailParams { minSize = .01, sizeRange = .3, brightPower = .7, distancePower = 4, alaunch = 90, breakdistance = .05, detailSizeThreshold = .1, minSteps = 4, stepsSizeMultiplier = 80  } },
 			{ "exp", new DetailParams { minSize = .012, sizeRange = .3, brightPower = 1.5, distancePower = 2, alaunch = 90, breakdistance = .05, detailSizeThreshold = .1, minSteps = 4, stepsSizeMultiplier = 80  } },
 			{ "3", new DetailParams { minSize = .015, sizeRange = .25, brightPower = 1.5, distancePower = 3, alaunch = 45, breakdistance = .01, detailSizeThreshold = .00, minSteps = 4, stepsSizeMultiplier = 80  } },
-            { "4", new DetailParams { minSize = .01, sizeRange = .3, brightPower = .5, distancePower = 4, alaunch = 180, breakdistance = .05, detailSizeThreshold = .1, minSteps = 2, stepsSizeMultiplier = 20  } }
+            { "4", new DetailParams { minSize = .01, sizeRange = .3, brightPower = .5, distancePower = 4, alaunch = 180, breakdistance = .05, detailSizeThreshold = .1, minSteps = 2, stepsSizeMultiplier = 20  } },
+            { "config", new DetailParams { minSize = .05, sizeRange = .4, brightPower = .5, distancePower = 4, alaunch = 180, breakdistance = .05, detailSizeThreshold = .1, minSteps = 3, stepsSizeMultiplier = 20  } }
         };
 
-		private static DetailParams preset = detailPresets["4"];
+		private static DetailParams preset = detailPresets["config"];
 		private static int numDistanceBreaks = 0;
 
 		public static void GetOrderedList(OTP startPosition) {
 			OTP item = startPosition;
 			OTP lastItem = item;
-			Logger.Instance.SilentLog("!");
 
 			#region edgesQuadrants
 
@@ -136,7 +137,7 @@ namespace com.tod.sketch.path {
 					double vx = item.point.x - .5;
 					double vy = item.point.y - .5;
 					double distanceCenter = Math.Sqrt(vx * vx + vy * vy);
-					double brightness = (Math.Pow((double)item.brightness, preset.brightPower) * Math.Pow(distanceCenter, preset.distancePower));
+					double brightness = Math.Pow(item.brightness, preset.brightPower) * Math.Pow(distanceCenter, preset.distancePower);
 					double size = minSize + brightness * sizeRange;
                     size = minSize + Math.Pow(brightness * 10, 2) / 10.0 * sizeRange;
 					if (size > minSize + sizeRange * preset.detailSizeThreshold) {
@@ -148,11 +149,11 @@ namespace com.tod.sketch.path {
 							1 - brightness);
 					}
 					else {
-						_ordered.Add(_ordered[numOrdered - 1]);
+						_ordered.Add(item); //_ordered.Add(_ordered[numOrdered - 1]);
 					}
 				}
 
-				_ordered.Add(item);
+				//_ordered.Add(item);
 
 				item.visited = true;
 
@@ -212,7 +213,7 @@ namespace com.tod.sketch.path {
 						waitForEdge = 20;
 						if (!quadrantDone[quadrant]) {
 							_ordered.Add(new OTP(TP.PenUp));
-							Logger.Instance.SilentLog("QUADRANT {0} appended.", quadrant.ToString());
+							Logger.Instance.SilentLog("Region {0}/{1} appended.", quadrant, quadrantDone.Count);
 							waitForEdge = 100;
 							quadrantDone[quadrant] = true;
 
@@ -231,7 +232,7 @@ namespace com.tod.sketch.path {
 				item = closest;
 			}
 
-			Logger.Instance.WriteLog("numDistanceBreaks: " + numDistanceBreaks);
+			//Logger.Instance.WriteLog("numDistanceBreaks: " + numDistanceBreaks);
 		}
 
 		private static float PI = (float)Math.PI;
@@ -251,12 +252,12 @@ namespace com.tod.sketch.path {
 			double nextMotionAngle = 0;
 			double motionAngle = Math.Atan2(motion.y, motion.x);
 			double steps = preset.minSteps + preset.stepsSizeMultiplier * size;
-			double da = Math.PI / steps * 2;
+			double da = PI / steps * 2;
 			TP lp = current;
 			double a = 0;
 			double i = 0;
 			while (
-				(da * i < A_MIN || AngleDistance(a, nextMotionAngle) > (float)(preset.alaunch * Math.PI / 180))
+				(da * i < A_MIN || AngleDistance(a, nextMotionAngle) > (float)(preset.alaunch * PI / 180))
 				&& da * i < A_MAX
 				) {
 				a = (motionAngle + da * i);
@@ -271,8 +272,11 @@ namespace com.tod.sketch.path {
 		}
 
 		private static float Score(OTP item, OTP neighbour) {
-			float distance = (float)Math.Sqrt(item.point.DistanceSquared(neighbour.point));
+
+			float distance = /*(float)Math.Sqrt(*/item.point.DistanceSquared(neighbour.point)/*)*/;
+
 			float deltaHue = RangedDistance(item.hue, neighbour.hue);
+			deltaHue *= deltaHue;
 
 			_avgDistance += distance;
 			_avgHue += deltaHue;
@@ -280,11 +284,8 @@ namespace com.tod.sketch.path {
 
 			float hueWeight = .5f;
 
-			float score =
-				distance * 1f
-				+
-				deltaHue * hueWeight
-				;
+			float score = distance + deltaHue * hueWeight;
+
 			return score;
 		}
 
@@ -303,11 +304,6 @@ namespace com.tod.sketch.path {
 			if (da > PI) da -= TWO_PI;
 			if (da < -PI) da += TWO_PI;
 			return da;
-
-			//double da = b - a + PI;
-			//mod = (a, n) -> a - floor(a/n) * n
-			da = da - Math.Floor(da / TWO_PI) * TWO_PI;
-			return da - PI;
 		}
 
 	}
