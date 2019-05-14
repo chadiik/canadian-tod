@@ -42,7 +42,7 @@ namespace com.tod.sketch {
 
 					float threshold = r * rMul + g * gMul + b * bMul;
 					float dIterations = threshold / ((float)iterations) * Math.Max(0f, (float)(iterations - 1));
-					if (x % 10 == 0 && y == 0) Logger.Instance.SilentLog("{0}/{1} | ", threshold.ToString("0.00"), dIterations.ToString("0.00"));
+					//if (x % 10 == 0 && y == 0) Logger.Instance.SilentLog("{0}/{1} | ", threshold.ToString("0.00"), dIterations.ToString("0.00"));
 					threshold += dIterations;
 					TP point = TP.Null;
 					for (int ite = 0; ite < iterations && point.IsNull; ite++) {
@@ -117,7 +117,8 @@ namespace com.tod.sketch {
 			for (x = 0; x < cols; x++) {
 				for (y = 0; y < rows; y++) {
 					gray = _ditheringArray[y, x];
-					if (gray == 0 || sobelData[y, x, 0] > 32) {
+					float sobelValue = sobelData[y, x, 0] / 256f;
+					if (gray == 0 || sobelValue > .125) {
 
 						double px = x * wf;
 						double py = y * hf;
@@ -132,8 +133,8 @@ namespace com.tod.sketch {
 
 						double dThresh = _random.NextDouble() * Math.Pow(inverseDc, 1.5);
 						// edges mask
-						const double sobelInf = .75;
-						dThresh *= (1.0 - sobelInf) + sobelInf * (sobelData[y, x, 0] / 256f);
+						const double sobelInf = .8;
+						dThresh *= (1.0 - sobelInf) + sobelInf * sobelValue;
 
 						penaltyMap.Data[y, x, 0] = (byte)(penalty * 255);
 						threshMap.Data[y, x, 1] = (byte)(dThresh * 255);
@@ -151,6 +152,17 @@ namespace com.tod.sketch {
 				}
 			}
 
+			const int maxPoints = 30000;
+			if (points.Count > maxPoints) {
+				Random rand = new Random(points.Count);
+				points.Sort(DistanceSort(new TP(.5f, .5f)));
+
+				while (points.Count > maxPoints) {
+					int index = (int)((1.0 - Math.Pow(rand.NextDouble(), 1)) * points.Count);
+					points.RemoveAt(index);
+				}
+			}
+
 			//Sketch.ShowProcessImage(penaltyDebugImage, "Dither Penalty");
 			//Sketch.ShowProcessImage(penaltyMap, "penaltyMap");
 			Sketch.ShowProcessImage(threshMap, "threshMap");
@@ -158,92 +170,15 @@ namespace com.tod.sketch {
 			return points;
 		}
 
-		public static List<TP> DitherFloydx(Image<Bgr, byte> source, Image<Gray, byte> sobelSource) {
-			List<TP> points = new List<TP>();
-			byte[,,] pixels = source.Data;
+		public static Comparison<TP> DistanceSort(TP p) {
+			return (TP a, TP b) => {
+				double da = a.DistanceSquared(p);
+				double db = b.DistanceSquared(p);
 
-			int rows = source.Rows;
-			int cols = source.Cols;
-			_ditheringArray = new int[rows, cols];
-			int x = 0, y = 0;
-			int red = 0, green = 0, blue = 0, gray = 0;
-
-			for (x = 0; x < cols; x++) {
-				for (y = 0; y < rows; y++) {
-					red = pixels[y, x, 2];
-					green = pixels[y, x, 1];
-					blue = pixels[y, x, 0];
-					gray = GrayCount(red, green, blue);
-					_ditheringArray[y, x] = gray;
-				}
-			}
-
-			for (y = 1; y < rows - 1; y++) {
-				for (x = 1; x < cols - 1; x++) {
-					DitheringBreak(y, x);
-				}
-			}
-
-			double wf = 1 / (double)cols;
-			double hf = 1 / (double)rows;
-
-			Image<Bgr, byte> penaltyDebugImage = new Image<Bgr, byte>(cols, rows);
-			Point debugPoint = new Point();
-			MCvScalar debugColor = new MCvScalar(0, 0, 255);
-			MCvScalar debugPixelColor = new MCvScalar(0, 0, 0);
-
-			// edges
-			sobelSource = sobelSource.SmoothBlur(4, 4);
-			Sketch.ShowProcessImage(sobelSource.Convert<Bgr, byte>(), "blur");
-			Image<Gray, float> sobel = sobelSource.Sobel(0, 1, 3).Add(sobelSource.Sobel(1, 0, 3)).AbsDiff(new Gray(0.0));
-
-			Image<Gray, byte> sobelContrast = sobel.Convert<Gray, byte>();
-			sobelContrast._GammaCorrect(1.2);
-			sobelContrast._Dilate(2);
-			Sketch.ShowProcessImage(sobelContrast.Convert<Bgr, byte>(), "sobel");
-			byte[,,] sobelData = sobelContrast.Data;
-			// edges
-
-			int ditherPoints = 0;
-			for (x = 0; x < cols; x++) {
-				for (y = 0; y < rows; y++) {
-					gray = _ditheringArray[y, x];
-					if (gray == 0) {
-						double xoff = 0;// (float)_random.NextDouble() * 1;
-						double yoff = 0;// (float)_random.NextDouble() * 1;
-
-						double px = ((double)x + xoff) * wf;
-						double py = ((double)y + yoff) * hf;
-
-						double cx = 0.4 + _random.NextDouble() * .2;
-						double cy = 0.4 + _random.NextDouble() * .2;
-						double vx = (px - cx) * 2.0;
-						double vy = (py - cy) * 2.0;
-						double dc = Math.Sqrt(vx * vx + vy * vy);
-						double inverseDc = 1 - dc;
-						double penalty = dc * ( .5 + _random.NextDouble() * .5);
-
-						double dThresh = Math.Min(1.0, (.2 + _random.NextDouble() * .4) * Math.Max(0.01, inverseDc));
-
-						// edges mask
-						//dThresh += (sobelData[y, x, 0] - 127f) / 127f;
-
-						if (dc < .8 && (dThresh > penalty || sobelData[y, x, 0] > 64)) {
-							ditherPoints++;
-							points.Add(new TP((float)px, (float)py));
-						}
-						else {
-							debugPoint.X = x;
-							debugPoint.Y = y;
-							CvInvoke.Circle(penaltyDebugImage, debugPoint, 1, debugColor, -1);
-						}
-					}
-				}
-			}
-
-			Sketch.ShowProcessImage(penaltyDebugImage, "Dither Penalty");
-
-			return points;
+				if (da < db) return -1;
+				else if (da > db) return 1;
+				return 0;
+			};
 		}
 
 		public static int GrayCount(int red, int green, int blue) {

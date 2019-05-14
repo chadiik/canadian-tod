@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace com.tod.sketch.path {
+
 	public class OTP{
 
 		public TP point;
@@ -19,6 +20,5 @@ namespace com.tod.sketch.path {
 		public OTP(TP tp) {
 			point = tp;
 		}
-
 	}
 }
