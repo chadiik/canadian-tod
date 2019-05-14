@@ -88,9 +88,12 @@ namespace com.tod {
         public static bool stream = false;
         public static int cell = -1;
         public static string wallConfig = "wall";
-        public static int xOffset = 0, yOffset;
+        public static int xOffset = 0, yOffset = 0;
+        public static int idleX = 1000, idleY = 1000;
         public static double xScale = 1, yScale = 1;
-		public static Version version = Version.Legacy;
+        public static double skewYMax = 0, skewXOffset = 1;
+
+        public static Version version = Version.Legacy;
 
 		static Config() {
 			Load();
@@ -161,6 +164,16 @@ namespace com.tod {
                                 if (int.TryParse(value, out yOffset)) Config.yOffset = yOffset;
                                 break;
 
+                            case "idleX":
+                                int idleX;
+                                if (int.TryParse(value, out idleX)) Config.idleX = idleX;
+                                break;
+
+                            case "idleY":
+                                int idleY;
+                                if (int.TryParse(value, out idleY)) Config.idleY = idleY;
+                                break;
+
                             case "xScale":
                                 double xScale;
                                 if (double.TryParse(value, out xScale)) Config.xScale = xScale;
@@ -170,7 +183,17 @@ namespace com.tod {
                                 double yScale;
                                 if (double.TryParse(value, out yScale)) Config.yScale = yScale;
                                 break;
-						}
+
+                            case "skewZ":
+                                double skewYMax;
+                                if (double.TryParse(value, out skewYMax)) Config.skewYMax = skewYMax;
+                                break;
+
+                            case "skewDelta":
+                                double skewXOffset;
+                                if (double.TryParse(value, out skewXOffset)) Config.skewXOffset = skewXOffset;
+                                break;
+                        }
 					}
 				}
 			}

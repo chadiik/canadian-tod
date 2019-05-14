@@ -2,10 +2,10 @@
 linestyle=stroke
 
 # if debug is true, will use sample video file; Otherwise stream from webcam
-debug=true
+debug=false
 
 # use serial streaming or mock it
-stream=false
+stream=true
 
 # sample is the video entry for debug mode
 sample=faces.mp4
@@ -16,12 +16,16 @@ version=legacy
 # starting cell (0-5)
 cell=0
 
-wallConfig=wallTest
+wallConfig=wall
 
-xOffset=3500
-
-yOffset=0
+xOffset=2300
+yOffset=500
 
 xScale=4
+yScale=.92
 
-yScale=.85
+skewZ=1550
+skewDelta=740
+
+idleX=100
+idleY=1200
