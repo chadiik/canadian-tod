@@ -6,7 +6,9 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Timers;
 
 namespace com.tod.sketch {
@@ -48,6 +50,7 @@ namespace com.tod.sketch {
 			Setup();
 			//Start(); merged
 
+			/*
 			Timer timer = new Timer(1000.0 / 30);
 			ElapsedEventHandler timerHandler = null;
 			timerHandler = new ElapsedEventHandler((object sender, ElapsedEventArgs eventArgs) => {
@@ -60,14 +63,34 @@ namespace com.tod.sketch {
 			});
 			timer.Elapsed += timerHandler;
 			timer.Start();
+			*/
+
+			Thread processThread = null;
+			processThread = new Thread(() => {
+				if (Update() == false) {
+					TimerEnd("Orbital wandering");
+					processThread.Abort();
+					_updateProcess = false;
+				}
+			});
+			processThread.Start();
+		}
+
+		private static Stopwatch s_Stopwatch = null;
+		private static void TimerStart() { s_Stopwatch = Stopwatch.StartNew(); }
+		private static void TimerEnd(string title) {
+			s_Stopwatch.Stop();
+			Console.WriteLine(" | | | {0} took {1} s", title, (s_Stopwatch.ElapsedMilliseconds / 1000.0).ToString(".00"));
 		}
 
 		private void Setup() {
+
 			Logger.Instance.WriteLog("Sketch.Setup");
 			_completed = false;
 
 			int hMax = 500;
 
+			TimerStart();
 			// Scale and apply easy filter
 			double scale = 1;
 			_sourceImage = _face.source.Clone();
@@ -84,7 +107,9 @@ namespace com.tod.sketch {
 			_focusImage = new Image<Bgr, byte>(Config.files.focusMap);
 			double focusScale = 1;
 			_focusImage = TODFilters.ScaleToFit(_focusImage, hMax, out focusScale);
+			TimerEnd("Filters");
 
+			TimerStart();
 			// Dither map creation
 			Image<Bgr, byte> clahe = _sourceImage.Clone();
 			Image<Gray, byte> edgesSource;
@@ -117,23 +142,27 @@ namespace com.tod.sketch {
 			eqColor._Mul(1.0 / 255.0);
 			_sourceImage = _sourceImage.Convert<Bgr, double>().Mul(eqColor).Convert<Bgr, byte>();
 			// preview off Sketch.ShowProcessImage(_sourceImage.Clone(), "Eq - Orbital Wanderer map");
+			TimerEnd("Dither and edges");
 
 			Sketch.ShowProcessImage(dithered, String.Format("Dither: {0} points", points.Count.ToString()));
 
+			TimerStart();
 			Image<Bgr, byte> debugPath = new Image<Bgr, byte>(w, h);
 			List<OTP> path = PathOrder.Order(points, _imageData, debugPath);
-			_numPathPoints = path.Count;
+			_numPathPoints = path.Count - 200;
 
 			#region less wander
 			_path = new List<TP>(_numPathPoints);
 			for (int i = 0; i < _numPathPoints; i++) {
 				_path.Add(path[i].point);
 			}
+			TimerEnd("Path order");
 
 			//OnCompleted();
 			//return;
 			#endregion
 
+			TimerStart();
 			Orbit orbit = new Orbit();
 			orbit.PhaseStep = 0.1f;
 
@@ -161,9 +190,14 @@ namespace com.tod.sketch {
                     }
 				}
 				else if (_previewImage != null) {
-					if(UpdatePreview() == false) {
-						return false;
-					}
+					Thread previewThread = null;
+					previewThread = new Thread(() => {
+						while (UpdatePreview())
+							Thread.Sleep(20);
+					});
+					previewThread.Start();
+
+					return false;
 				}
 			}
 
@@ -201,7 +235,7 @@ namespace com.tod.sketch {
 			SketchCompleted?.Invoke(_path);
 			DrawVisuals();
 
-			/* legacy _previewEntry = */Sketch.ShowProcessImage(_previewImage, String.Format("Path preview ({0} coords)", _path.Count.ToString()));
+			/* legacy _previewEntry = */Sketch.ShowProcessImage(_previewImage, null);
 			// legacy _handler.Invoke(_face.imageName, ToFloatList(_path));
 
 		}
@@ -343,7 +377,7 @@ namespace com.tod.sketch {
 			float hf = h;
 
             bool sprayLine = Config.sprayLine;
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 200; i++) {
 				int numPoints = _path.Count;
 				if (_index < numPoints) {
 					TP point = Pop(_index);
@@ -360,7 +394,8 @@ namespace com.tod.sketch {
 				_index++;
 			}
 
-			Sketch.ShowProcessImage(TPDither.Canvas);
+			Sketch.ShowProcessImage(_previewImage, null);
+			//Sketch.ShowProcessImage(TPDither.Canvas);
 
 			return _index < _path.Count;
 		}
