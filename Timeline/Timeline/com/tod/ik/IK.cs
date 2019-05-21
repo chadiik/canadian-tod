@@ -9,6 +9,49 @@ using System.Threading;
 
 namespace com.tod.ik {
 
+	public class IKPos {
+
+		public float x, y;
+		public bool penDown;
+
+		public IKPos(int x, int y, bool penDown) {
+			this.x = x;
+			this.y = y;
+			this.penDown = penDown;
+		}
+
+		public static List<IKPos> Convert(List<TP> path) {
+			int pathLength = path.Count;
+			List<IKPos> converted = new List<IKPos>(pathLength);
+
+			int index = 0;
+			while (index < pathLength && path[index].IsDown == false) index++;
+
+			converted.Add(new IKPos((int)path[index].x, (int)path[index].y, false));
+
+			float x = 0, y = 0;
+			bool penDown = true;
+			for (; index < pathLength; index++) {
+
+				TP p = path[index];
+				if (p.IsDown) {
+					if (penDown == false) {
+						penDown = true;
+						converted.Add(new IKPos((int)p.x, (int)p.y, false));
+					}
+					converted.Add(new IKPos((int)p.x, (int)p.y, true));
+				}
+				else {
+					penDown = false;
+				}
+			}
+
+			converted.Add(new IKPos((int)x, (int)y, false));
+
+			return converted;
+		}
+	}
+
 	public class IK {
 
 		public delegate void ConversionResult(int xsteps, int ssteps, int esteps, int wrist);
