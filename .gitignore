@@ -236,3 +236,5 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+Timeline/Timeline/bin/Debug/config/sketchJob.json
+Timeline/Timeline/bin/Debug/config/sketchJobProcessed.json
