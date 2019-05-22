@@ -38,14 +38,14 @@ namespace com.tod.scenarios {
 			ik = new IK();
 			ik.ConversionCompleted += OnIKConversionCompleted;
 
-			streamer = new CanadianStreamer(!Config.stream);
+			streamer = new CanadianStreamer(!Config.stream || Config.debug);
 			streamer.ConnectionFailed += () => Logger.Instance.WriteLog("Scenario: CONNECTION TO CANADIAN STREAMER FAILED!");
 			streamer.PacketSent += (total) => JSON.Save(new SketchJobProcessed(total), "sketchJobProcessed");
 		}
 
 		public void Resume(SketchJob job, int processed) {
 
-			List<TP> sketch = job.GetUnprocessedSketch(processed);
+			List<Coo> sketch = job.GetUnprocessedSketch(processed);
 			if(sketch != null) {
 				Config.cell = job.cell + 1;
 				StreamSketch(sketch, job.cell);
@@ -89,7 +89,7 @@ namespace com.tod.scenarios {
 		}
 
         private long m_LastCompletedOn = 0;
-		private void OnSketchCompleted(List<TP> path) {
+		private void OnSketchCompleted(List<Line> path) {
 
 			Sketch.SketchCompleted -= OnSketchCompleted;
 			if (Config.time.ElapsedMillis - m_LastCompletedOn < 100)
@@ -97,24 +97,22 @@ namespace com.tod.scenarios {
 
 			m_LastCompletedOn = Config.time.ElapsedMillis;
 
-			List<TP> square = new List<TP> {
-				TP.PenUp,
-					new TP(.1f, .1f),
-					new TP(.9f, .1f),
-					new TP(.9f, .9f),
-					new TP(.1f, .9f),
-					new TP(.1f, .1f)
-				};
+			Line square = new Line();
+			square.Add(new Coo(.1f, .1f, false));
+			square.Add(new Coo(.9f, .1f, false));
+			square.Add(new Coo(.9f, .9f, false));
+			square.Add(new Coo(.1f, .9f, false));
+			square.Add(new Coo(.1f, .1f, false));
 
 			if (false) {
 
 				path.Clear();
 				for (int i = 0; i < 300; i++)
-					path.AddRange(square);
+					path.Add(square);
 			}
 
 			int cell = (Config.cell++) % wall.UnitCells.Count;
-			List<TP> sketch = wall.ToCell(path, cell);
+			List<Line> sketch = wall.ToCell(path, cell);
 			switch (Config.version) {
 				case Sketch.Version.Legacy:
 					sketch = Sketch.Optimize(sketch, 4, 100);
@@ -122,39 +120,33 @@ namespace com.tod.scenarios {
 
 				case Sketch.Version.Hatch:
 					//sketch = Sketch.Optimize(sketch, 0, 200);
-					tod.sketch.hatch.Hatch.SketchPreview(sketch.ToList(), new Image<Bgr, byte>(wall.width, wall.height, new Bgr(255, 255, 255)), new MCvScalar(0), 1);
+					//tod.sketch.hatch.Hatch.SketchPreview(sketch.ToList(), new Image<Bgr, byte>(wall.width, wall.height, new Bgr(255, 255, 255)), new MCvScalar(0), 1);
 					break;
 			}
 
-			StreamSketch(sketch, cell);
+			StreamSketch(Line.Merge(sketch), cell);
 		}
 
-		private void StreamSketch(List<TP> sketch, int cell) {
+		private void StreamSketch(List<Coo> sketch, int cell) {
 
 			JSON.Save(SketchJob.Create(sketch, cell), "sketchJob");
 			JSON.Save(new SketchJobProcessed(0), "sketchJobProcessed");
 
-			List<TP> square = new List<TP> {
-				TP.PenUp,
-				new TP(.1f, .1f),
-				TP.PenUp,
-				new TP(.9f, .1f),
-				TP.PenUp,
-				new TP(.9f, .9f),
-				TP.PenUp,
-				new TP(.1f, .9f),
-				TP.PenUp,
-				new TP(.1f, .1f),
-                TP.PenUp
-            };
+			Line square = new Line();
+			square.Add(new Coo(.1f, .1f, false));
+			square.Add(new Coo(.9f, .1f, false));
+			square.Add(new Coo(.9f, .9f, false));
+			square.Add(new Coo(.1f, .9f, false));
+			square.Add(new Coo(.1f, .1f, false));
+
+			Console.WriteLine("square: {0}", square);
 
 			if (true) {
-				List<TP> tpSquare = wall.ToCell(square, cell);
-				sketch.InsertRange(0, tpSquare);
-				//sketch.InsertRange(0, tpSquare);
+				Line tpSquare = wall.ToCell(square, cell);
+				sketch.InsertRange(0, tpSquare.path);
 			}
 
-			Sketch.DrawToWall(sketch);
+			Sketch.DrawToWall(new List<Line> { new Line ( sketch ) });
 
             int xOffset = Config.xOffset;
             int yOffset = Config.yOffset;
@@ -164,24 +156,21 @@ namespace com.tod.scenarios {
             float skewYMax = (float)Config.skewYMax;
             float skewXOffset = (float)Config.skewXOffset;
 
-            Func<float, float, TP> transform = (px, py) => {
+            Func<float, float, bool, Coo> transform = (px, py, down) => {
                 float y = wall.height - py;
                 float skew = y / skewYMax * skewXOffset;
                 float x = (px + skew) * xScale * overallScale + xOffset;
                 y = y * yScale * overallScale + yOffset;
-                return new TP(x, y);
+                return new Coo(x, y, down);
             };
 
             for (int i = 0, numPoints = sketch.Count; i < numPoints; i++) {
-                TP p = sketch[i];
-                if (p.IsDown) {
-                    sketch[i] = transform(p.x, p.y);
-                }
+                Coo p = sketch[i];
+                sketch[i] = transform(p.x, p.y, p.down);
             }
 
-            TP idleCoo = transform(Config.idleX, Config.idleY);
-            for (int i = 0; i < 2; i++) {
-                sketch.Add(TP.PenUp);
+            Coo idleCoo = transform(Config.idleX, Config.idleY, false);
+            for (int i = 0; i < 200; i++) {
                 sketch.Add(idleCoo);
             }
 

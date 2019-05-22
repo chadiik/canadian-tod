@@ -1,4 +1,5 @@
-﻿using com.tod.sketch;
+﻿using com.tod.core;
+using com.tod.sketch;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,49 +9,6 @@ using System.Text;
 using System.Threading;
 
 namespace com.tod.ik {
-
-	public class IKPos {
-
-		public float x, y;
-		public bool penDown;
-
-		public IKPos(int x, int y, bool penDown) {
-			this.x = x;
-			this.y = y;
-			this.penDown = penDown;
-		}
-
-		public static List<IKPos> Convert(List<TP> path) {
-			int pathLength = path.Count;
-			List<IKPos> converted = new List<IKPos>(pathLength);
-
-			int index = 0;
-			while (index < pathLength && path[index].IsDown == false) index++;
-
-			converted.Add(new IKPos((int)path[index].x, (int)path[index].y, false));
-
-			float x = 0, y = 0;
-			bool penDown = true;
-			for (; index < pathLength; index++) {
-
-				TP p = path[index];
-				if (p.IsDown) {
-					if (penDown == false) {
-						penDown = true;
-						converted.Add(new IKPos((int)p.x, (int)p.y, false));
-					}
-					converted.Add(new IKPos((int)p.x, (int)p.y, true));
-				}
-				else {
-					penDown = false;
-				}
-			}
-
-			converted.Add(new IKPos((int)x, (int)y, false));
-
-			return converted;
-		}
-	}
 
 	public class IK {
 
@@ -80,7 +38,7 @@ namespace com.tod.ik {
 			return true;
 		}
 
-		public int Convert(List<TP> path, ConversionResult stepsHandler) {
+		public int Convert(List<Coo> path, ConversionResult stepsHandler) {
 
 			int id = s_JobID++;
 
@@ -147,6 +105,31 @@ namespace com.tod.ik {
 			return id;
 		}
 
+		private bool SavePath(List<Coo> path, string filepath) {
+
+			int pathLength = path.Count;
+			List<int> cleanPath = new List<int>(pathLength * 3);
+
+			foreach(Coo c in path) {
+				Add(cleanPath, (int)c.x, (int)c.y, c.down);
+			}
+
+			try {
+				using (StreamWriter fs = new StreamWriter(filepath)) {
+					int cleanPathLength = cleanPath.Count;
+					for (int i = 0; i < cleanPathLength; i += 3) {
+						fs.WriteLine(string.Format("{0} {1} {2}", cleanPath[i], cleanPath[i + 1], cleanPath[i + 2]));
+					}
+				}
+			}
+			catch (Exception e) {
+				Logger.Instance.ExceptionLog(e.ToString());
+				return false;
+			}
+
+			return true;
+		}
+
 		private bool SavePath(List<TP> path, string filepath) {
 
 			int pathLength = path.Count;
@@ -158,13 +141,14 @@ namespace com.tod.ik {
 			Add(cleanPath, path[index].x, path[index].y, false);
 
 			float x = 0, y = 0;
-			bool penDown = true;
+			bool penDown = false;
 			for (; index < pathLength; index++) {
 
 				TP p = path[index];
 				if (p.IsDown) {
 					if(penDown == false) {
 						penDown = true;
+						Add(cleanPath, x, y, false);
 						Add(cleanPath, p.x, p.y, false);
 					}
 					Add(cleanPath, x = p.x, y = p.y, true);

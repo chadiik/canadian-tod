@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using com.tod.sketch;
+using com.tod.core;
 
 namespace com.tod.canvas {
 
@@ -103,11 +104,20 @@ namespace com.tod.canvas {
 			}
 		}
 
-        public override List<TP> ToCell(List<TP> path, int cell) {
+		private static List<Line> s_TempPath = new List<Line>();
+		public Line ToCell(Line points, int cell) {
+			s_TempPath.Clear();
+			s_TempPath.Add(points);
+			List<Line> results = ToCell(s_TempPath, cell);
+			return results.Count > 0 ? results[0] : null;
+		}
+
+
+		public override List<Line> ToCell(List<Line> path, int cell) {
 
             cell = Math.Min(_cells.Count - 1, Math.Max(0, cell));
 
-            List<TP> result = new List<TP>();
+            List<Line> result = new List<Line>();
             RectangleF r = _cells[cell];
             float rx = r.X = (float)Math.Floor(r.X * width);
             float ry = r.Y = (float)Math.Floor(r.Y * height);
@@ -117,44 +127,32 @@ namespace com.tod.canvas {
             double pathLength = 0;
             int penUps = 0;
             int coordinates = 0;
-            bool wasDown = false;
-            TP np = new TP(0, 0);
-            for (int i = 0; i < path.Count; i++) {
-                TP p = path[i];
-                if (p.IsDown && !p.IsNull) {
-                    float x = rx + p.x * rw,
-                        y = ry + p.y * rh;
-                    if (r.Contains(x, y)) {
-                        double d = Math.Sqrt((np.x - x) * (np.x - x) + (np.y - y) * (np.y - y));
-                        if (d > 4) {
-                            pathLength += d;
-                            coordinates++;
+			Coo np = default(Coo);
+			foreach (Line line in path) {
+				Line nl = new Line();
+				result.Add(nl);
+				List<Coo> points = line.path;
+				for (int i = 0, numPoints = points.Count; i < numPoints; i++) {
+					Coo p = points[i];
+					float x = rx + p.x * rw,
+						y = ry + p.y * rh;
+					if (r.Contains(x, y)) {
+						double d = Math.Sqrt((np.x - x) * (np.x - x) + (np.y - y) * (np.y - y));
+						pathLength += d;
+						coordinates++;
 
-                            np = new TP(x, y);
-                            result.Add(np);
-                            wasDown = true;
-                        }
-                    }
-                    else {
-                        if (result[result.Count - 1].IsDown) {
-                            result.Add(TP.PenUp);
-                            penUps++;
-                        }
-                        wasDown = false;
-                    }
-                }
-                else if (wasDown) {
-                    if (result[result.Count - 1].IsDown) {
-                        result.Add(TP.PenUp);
-                        penUps++;
-                    }
-                    wasDown = false;
-                }
-            }
+						np = new Coo(x, y, p.down);
+						nl.Add(np);
+					}
+				}
+			}
 
-            Logger.Instance.WriteLog("Had Path length = {0} mm", Math.Floor(pathLength));
-            Logger.Instance.WriteLog("Had Coordinates = {0}x", coordinates);
-            Logger.Instance.WriteLog("Had Pen ups = {0}x", penUps);
+			Line.Sanitize(result);
+			penUps = result.Count;
+
+            //Logger.Instance.WriteLog("Had Path length = {0} mm", Math.Floor(pathLength));
+            //Logger.Instance.WriteLog("Had Coordinates = {0}x", coordinates);
+            //Logger.Instance.WriteLog("Had Pen ups = {0}x", penUps);
 
             return result;
         }
@@ -197,7 +195,7 @@ namespace com.tod.canvas {
 			return image;
 		}
 
-        public List<TP> Fit(int imageWidth, int imageHeight, List<TP> path) {
+        public List<Line> Fit(int imageWidth, int imageHeight, List<Line> path) {
 
             double sx = (double)(imageWidth - 40) / width;
             double sy = (double)(imageHeight - 40) / height;
@@ -208,12 +206,13 @@ namespace com.tod.canvas {
             int x = (imageWidth - w) / 2,
                 y = (imageHeight - h) / 2;
 
-            int pathLength = path.Count;
-            List<TP> scaledPath = new List<TP>(pathLength);
-            for(int i = 0; i < pathLength; i++) {
-                TP p = path[i];
-                scaledPath.Add(p.IsDown ? new TP(x + p.x * scale, y + p.y * scale, p.IsNull) : p);
-            }
+            List<Line> scaledPath = new List<Line>(path.Count);
+			foreach (Line line in path) {
+				Line nl = new Line();
+				scaledPath.Add(nl);
+				foreach(Coo p in line.path)
+					nl.Add(new Coo(x + p.x * scale, y + p.y * scale, p.down));
+			}
 
             return scaledPath;
         }

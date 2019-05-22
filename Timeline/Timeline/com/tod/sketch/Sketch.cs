@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace com.tod.sketch {
 
 	public delegate void DisplayEntryRequest(IImage image);
-	public delegate void SketchComplete(List<TP> path);
+	public delegate void SketchComplete(List<Line> path);
 
 	public class SketchJobProcessed {
 		public int processed = 0;
@@ -34,25 +34,32 @@ namespace com.tod.sketch {
 			this.cell = cell;
 		}
 
-		public List<TP> GetUnprocessedSketch(int processed) {
-			if (cell != -1 && path != null && processed * 2 < path.Length) {
+		public List<Coo> GetUnprocessedSketch(int processed) {
+			if (cell != -1 && path != null && processed * 3 < path.Length) {
 				int pathLength = path.Length;
-				int start = Math.Max(0, processed * 2);
-				List<TP> sketch = new List<TP>(pathLength / 2 - start + 2) { TP.PenUp };
-				for(int i = start; i < pathLength; i+=2) {
-					sketch.Add(new TP(path[i], path[i + 1]));
+				int start = Math.Max(0, processed * 3);
+				List<Coo> sketch = new List<Coo>(pathLength / 3 - start + 3);
+				for(int i = start; i < pathLength; i += 3) {
+					sketch.Add(new Coo(path[i], path[i + 1], path[i + 2] == 1));
 				}
-				return sketch;
+
+				if (sketch.Count > 0) {
+					Coo c = sketch[0];
+					c.down = false;
+					sketch[0] = c;
+					return sketch;
+				}
 			}
 			return null;
 		}
 
-		public static SketchJob Create(List<TP> sketch, int cell) {
+		public static SketchJob Create(List<Coo> sketch, int cell) {
 			int sketchLength = sketch.Count;
-			int[] path = new int[sketchLength * 2];
+			int[] path = new int[sketchLength * 3];
 			for (int i = 0; i < sketchLength; i++) {
-				path[i * 2] = (int)sketch[i].x;
-				path[i * 2 + 1] = (int)sketch[i].y;
+				path[i * 3] = (int)sketch[i].x;
+				path[i * 3 + 1] = (int)sketch[i].y;
+				path[i * 3 + 2] = sketch[i].down ? 1 : 0;
 			}
 
 			return new SketchJob(path, cell);
@@ -145,18 +152,19 @@ namespace com.tod.sketch {
 			DisplayEntryRequested?.Invoke(image);
 		}
 
-        public static void DrawToWall(List<TP> path) {
+        public static void DrawToWall(List<Line> path) {
 
             DrawToWallRequested?.Invoke(path);
         }
 
-		public static List<TP> Optimize(List<TP> original, float simplificationTolerance, double breakDistance) {
+		public static List<Line> Optimize(List<Line> original, float simplificationTolerance, double breakDistance) {
 
 			// Copy all down
 			List<Point> path = new List<Point>();
-			for (int i = 0, numPoints = original.Count; i < numPoints; i++) {
-				TP tp = original[i];
-				if (tp.IsDown) {
+			foreach (Line line in original) {
+				List<Coo> points = line.path;
+				for (int i = 0, numPoints = points.Count; i < numPoints; i++) {
+					Coo tp = points[i];
 					path.Add(tp.ToPoint());
 				}
 			}
@@ -164,7 +172,7 @@ namespace com.tod.sketch {
 			return Optimize(path, simplificationTolerance, breakDistance);
 		}
 
-		public static List<TP> Optimize(List<Point> path, float simplificationTolerance, double breakDistance) {
+		public static List<Line> Optimize(List<Point> path, float simplificationTolerance, double breakDistance) {
 
 			if (simplificationTolerance > float.Epsilon)
 				path = SimplifyJS.Simplify(path, simplificationTolerance);
@@ -173,7 +181,8 @@ namespace com.tod.sketch {
             int penUps = 2;
             int coordinates = 0;
 
-            List<TP> optimized = new List<TP> { TP.PenUp };
+			Line line = new Line();
+            List<Line> optimized = new List<Line> { line };
             Point previous = default(Point);
             for (int i = 0, numPoints = path.Count; i < numPoints; i++) {
                 Point current = path[i];
@@ -182,18 +191,19 @@ namespace com.tod.sketch {
                 double d = Math.Sqrt(vx * vx + vy * vy);
                 pathLength += d;
                 if (d < breakDistance) {
-                    optimized.Add(new TP(current.X, current.Y));
+					line.Add(new Coo(current.X, current.Y, true));
                     coordinates++;
                 }
                 else {
-                    optimized.Add(TP.PenUp);
+					line = new Line();
+					optimized.Add(line);
                     penUps++;
                 }
 
                 previous = current;
             }
 
-            optimized.Add(TP.PenUp);
+			Line.Sanitize(optimized);
 
             Logger.Instance.WriteLog("Path length = {0} mm", Math.Floor(pathLength));
             Logger.Instance.WriteLog("Coordinates = {0}x", coordinates);

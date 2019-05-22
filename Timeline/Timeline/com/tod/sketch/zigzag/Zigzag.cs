@@ -72,7 +72,7 @@ namespace com.tod.sketch.zigzag {
 			(new Thread(() => {
 
 				Zigzagger zigzagger = new Zigzagger(linkedContours, parameters.thresholds, regionsMap);
-				SketchCompleted?.Invoke(new List<TP>() { new TP(1000, 1000), new TP(1000, 1000) });
+				SketchCompleted?.Invoke(new List<Line>() { new Line(new List<Coo> { new Coo(1000, 1000, false), new Coo(1000, 1000, false) } ) });
 			})).Start();
 		}
 
