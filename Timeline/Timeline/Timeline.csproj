@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="com\tod\canvas\Canvas.cs" />
     <Compile Include="com\tod\canvas\Wall.cs" />
+    <Compile Include="com\tod\core\Line.cs" />
     <Compile Include="com\tod\ik\IK.cs" />
     <Compile Include="com\tod\scenarios\Scenario.cs" />
     <Compile Include="com\tod\Config.cs" />

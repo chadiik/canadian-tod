@@ -105,7 +105,7 @@ namespace com.tod.sketch.hatch {
                         TP p = hatcher.path[i];
                         scaledPath.Add(p.IsDown ? new TP(p.x * sw, p.y * sh, p.IsNull) : p);
                     }
-					SketchCompleted?.Invoke(scaledPath);
+					SketchCompleted?.Invoke(Line.Convert(scaledPath));
 				};
 
 				hatcher.Process(sourceImage.Clone(), firstContours);

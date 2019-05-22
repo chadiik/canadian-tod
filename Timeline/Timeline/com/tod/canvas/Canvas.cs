@@ -1,4 +1,5 @@
-﻿using com.tod.sketch;
+﻿using com.tod.core;
+using com.tod.sketch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,15 +27,9 @@ namespace com.tod.canvas {
 			this.height = height;
 		}
 
-		public virtual List<TP> ToCell(List<TP> path, int cell = 0) {
+		public virtual List<Line> ToCell(List<Line> path, int cell = 0) {
 
-			List<TP> result = new List<TP>();
-			for(int i = 0; i < path.Count; i++) {
-				TP p = path[i];
-				result.Add(p.IsDown ? new TP(x + p.x * width, y + p.y * width, p.IsNull) : new TP(p.x, p.y, p.IsNull));
-			}
-
-			return result;
+			return path;
 		}
 	}
 }

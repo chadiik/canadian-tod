@@ -232,7 +232,7 @@ namespace com.tod.sketch {
 			if (_path.Count > clip)
 				_path.RemoveRange(0, clip);
 
-			SketchCompleted?.Invoke(_path);
+			SketchCompleted?.Invoke(Line.Convert(_path));
 			DrawVisuals();
 
 			/* legacy _previewEntry = */Sketch.ShowProcessImage(_previewImage, null);
