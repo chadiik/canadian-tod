@@ -87,9 +87,10 @@ namespace Timeline {
 
             Image<Bgr, byte> wallPreview = wall.Visualize(false);
             m_GUI.wallPreview.Source = wallPreview;
-            Sketch.DrawToWallRequested += (List<TP> path) => {
-                List<TP> scaledPath = wall.Fit(wallPreview.Width, wallPreview.Height, path);
-                TP.Visualize(scaledPath, wallPreview, new MCvScalar(0), 1);
+            Sketch.DrawToWallRequested += (List<Line> path) => {
+                List<Line> scaledPath = wall.Fit(wallPreview.Width, wallPreview.Height, path);
+				//Console.WriteLine(Line.Print(scaledPath));
+                Line.Visualize(scaledPath, wallPreview, new MCvScalar(0), 1);
                 m_GUI.wallPreview.Source = wallPreview;
                 //m_GUI.debugPreview.Source = image;
             };
